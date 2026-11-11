@@ -1,0 +1,52 @@
+"""Public contract and data platform compatibility checks."""
+import ast
+from pathlib import Path
+import subprocess
+
+ROOT = Path(__file__).resolve().parents[2]
+
+
+def original(path):
+    return subprocess.check_output(['git','show',f'main:{path}'],cwd=ROOT,text=True)
+
+
+def methods(tree):
+    output={}
+    for node in tree.body:
+        if isinstance(node,(ast.FunctionDef,ast.AsyncFunctionDef)):
+            output[node.name]=node
+        elif isinstance(node,ast.ClassDef):
+            for member in node.body:
+                if isinstance(member,(ast.FunctionDef,ast.AsyncFunctionDef)):
+                    output[f'{node.name}.{member.name}']=member
+    return output
+
+
+def test_data_platform_unchanged_from_main():
+    diff=subprocess.check_output(['git','diff','--stat','main','--','data_platform/'],cwd=ROOT,text=True)
+    assert not diff.strip(),diff
+
+
+def test_frozen_eval_signatures_models_and_validators():
+    for name in ('models.py','ports.py'):
+        path=f'eval_platform/{name}'
+        assert (ROOT/path).read_text()==original(path)
+    for name in ('evaluators.py','runner.py','report_generator.py'):
+        path=f'eval_platform/{name}'
+        before=methods(ast.parse(original(path)))
+        after=methods(ast.parse((ROOT/path).read_text()))
+        for key,node in before.items():
+            replacement=after[key]
+            assert type(node) is type(replacement),key
+            assert ast.dump(node.args)==ast.dump(replacement.args),key
+            # Unannotated helpers legitimately have returns=None; ast.dump only accepts ASTs.
+            assert (ast.dump(node.returns) if node.returns is not None else None)==(
+                ast.dump(replacement.returns) if replacement.returns is not None else None),key
+            assert [ast.dump(d) for d in node.decorator_list]==[ast.dump(d) for d in replacement.decorator_list],key
+
+
+def test_no_v1_syntax_or_unimplemented_methods():
+    for path in (ROOT/'eval_platform').rglob('*.py'):
+        source=path.read_text()
+        assert '.dict()' not in source and '@validator' not in source
+        assert 'raise NotImplementedError' not in source

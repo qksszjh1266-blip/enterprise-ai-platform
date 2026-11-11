@@ -1,0 +1,17 @@
+{
+  "max_hit_rate_drop": 0.02,
+  "max_recall_drop": 0.03,
+  "max_mrr_drop": 0.03,
+  "max_accuracy_drop": 0.03,
+  "max_faithfulness_drop": 0.03,
+  "max_satisfaction_drop": 0.2,
+  "min_faithfulness": 0.85,
+  "min_hit_rate": 0.8,
+  "max_p95_latency_increase": 10.0,
+  "max_p95_latency_ms": 1000.0,
+  "max_degraded_rate": 0.05,
+  "max_error_rate": 0.02,
+  "max_newly_failed": 0,
+  "require_same_suite": true,
+  "top_bad_cases": 10
+}

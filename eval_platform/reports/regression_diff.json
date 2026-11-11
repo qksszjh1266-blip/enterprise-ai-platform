@@ -1,0 +1,127 @@
+{
+  "baseline_run_id": "catering-baseline",
+  "candidate_run_id": "catering-candidate",
+  "baseline_version": "hybrid-rrf-no-rerank",
+  "candidate_version": "hybrid-rrf-rerank",
+  "suite_comparable": true,
+  "metric_deltas": [
+    {
+      "metric": "retrieval_hit_rate",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "abs_delta": 0.0,
+      "rel_delta_pct": 0.0,
+      "higher_is_better": true,
+      "tolerance": 0.02,
+      "regressed": false
+    },
+    {
+      "metric": "mean_recall_at_k",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "abs_delta": 0.0,
+      "rel_delta_pct": 0.0,
+      "higher_is_better": true,
+      "tolerance": 0.03,
+      "regressed": false
+    },
+    {
+      "metric": "mean_mrr",
+      "baseline": 0.7222222222222222,
+      "candidate": 0.9583333333333334,
+      "abs_delta": 0.23611111111111116,
+      "rel_delta_pct": 32.6923076923077,
+      "higher_is_better": true,
+      "tolerance": 0.03,
+      "regressed": false
+    },
+    {
+      "metric": "answer_accuracy_rate",
+      "baseline": null,
+      "candidate": null,
+      "abs_delta": null,
+      "rel_delta_pct": null,
+      "higher_is_better": true,
+      "tolerance": 0.03,
+      "regressed": false
+    },
+    {
+      "metric": "mean_faithfulness",
+      "baseline": null,
+      "candidate": null,
+      "abs_delta": null,
+      "rel_delta_pct": null,
+      "higher_is_better": true,
+      "tolerance": 0.03,
+      "regressed": false
+    },
+    {
+      "metric": "mean_satisfaction",
+      "baseline": null,
+      "candidate": null,
+      "abs_delta": null,
+      "rel_delta_pct": null,
+      "higher_is_better": true,
+      "tolerance": 0.2,
+      "regressed": false
+    },
+    {
+      "metric": "latency_p50_ms",
+      "baseline": 11.166612000124587,
+      "candidate": 11.944285000936361,
+      "abs_delta": 0.7776730008117738,
+      "rel_delta_pct": 6.964269921826757,
+      "higher_is_better": false,
+      "tolerance": null,
+      "regressed": false
+    },
+    {
+      "metric": "latency_p95_ms",
+      "baseline": 14.067270849318446,
+      "candidate": 14.637814049001461,
+      "abs_delta": 0.5705431996830157,
+      "rel_delta_pct": 4.055820107499091,
+      "higher_is_better": false,
+      "tolerance": 140.67270849318444,
+      "regressed": false
+    },
+    {
+      "metric": "degraded_rate",
+      "baseline": 0.0,
+      "candidate": 0.0,
+      "abs_delta": 0.0,
+      "rel_delta_pct": null,
+      "higher_is_better": false,
+      "tolerance": null,
+      "regressed": false
+    },
+    {
+      "metric": "error_rate",
+      "baseline": 0.0,
+      "candidate": 0.0,
+      "abs_delta": 0.0,
+      "rel_delta_pct": null,
+      "higher_is_better": false,
+      "tolerance": null,
+      "regressed": false
+    },
+    {
+      "metric": "acl_block_rate",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "abs_delta": 0.0,
+      "rel_delta_pct": 0.0,
+      "higher_is_better": true,
+      "tolerance": null,
+      "regressed": false
+    }
+  ],
+  "gate_passed": true,
+  "violations": [],
+  "blocking_reasons": [],
+  "newly_failed_sample_ids": [],
+  "fixed_sample_ids": [
+    "finance_approval.18"
+  ],
+  "top_bad_cases": []
+}
