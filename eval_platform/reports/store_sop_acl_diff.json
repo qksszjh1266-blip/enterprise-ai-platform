@@ -1,0 +1,248 @@
+{
+  "baseline_run_id": "store-sop-baseline",
+  "candidate_run_id": "store-sop-acl-injection",
+  "baseline_version": "baseline",
+  "candidate_version": "acl-injection",
+  "suite_comparable": true,
+  "metric_deltas": [
+    {
+      "metric": "retrieval_hit_rate",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "abs_delta": 0.0,
+      "rel_delta_pct": 0.0,
+      "higher_is_better": true,
+      "tolerance": 0.02,
+      "regressed": false
+    },
+    {
+      "metric": "mean_recall_at_k",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "abs_delta": 0.0,
+      "rel_delta_pct": 0.0,
+      "higher_is_better": true,
+      "tolerance": 0.03,
+      "regressed": false
+    },
+    {
+      "metric": "mean_mrr",
+      "baseline": 0.8833333333333334,
+      "candidate": 0.8833333333333334,
+      "abs_delta": 0.0,
+      "rel_delta_pct": 0.0,
+      "higher_is_better": true,
+      "tolerance": 0.03,
+      "regressed": false
+    },
+    {
+      "metric": "answer_accuracy_rate",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "abs_delta": 0.0,
+      "rel_delta_pct": 0.0,
+      "higher_is_better": true,
+      "tolerance": 0.03,
+      "regressed": false
+    },
+    {
+      "metric": "mean_faithfulness",
+      "baseline": 0.1,
+      "candidate": 0.1,
+      "abs_delta": 0.0,
+      "rel_delta_pct": 0.0,
+      "higher_is_better": true,
+      "tolerance": 0.03,
+      "regressed": false
+    },
+    {
+      "metric": "mean_satisfaction",
+      "baseline": 4.5,
+      "candidate": 4.5,
+      "abs_delta": 0.0,
+      "rel_delta_pct": 0.0,
+      "higher_is_better": true,
+      "tolerance": 0.2,
+      "regressed": false
+    },
+    {
+      "metric": "latency_p50_ms",
+      "baseline": 15.434886998264119,
+      "candidate": 14.065590999962296,
+      "abs_delta": -1.3692959983018227,
+      "rel_delta_pct": -8.871435200373156,
+      "higher_is_better": false,
+      "tolerance": null,
+      "regressed": false
+    },
+    {
+      "metric": "latency_p95_ms",
+      "baseline": 23.413270900709904,
+      "candidate": 17.997938302141847,
+      "abs_delta": -5.415332598568057,
+      "rel_delta_pct": -23.12932960769638,
+      "higher_is_better": false,
+      "tolerance": 234.13270900709904,
+      "regressed": false
+    },
+    {
+      "metric": "degraded_rate",
+      "baseline": 0.0,
+      "candidate": 0.0,
+      "abs_delta": 0.0,
+      "rel_delta_pct": null,
+      "higher_is_better": false,
+      "tolerance": null,
+      "regressed": false
+    },
+    {
+      "metric": "error_rate",
+      "baseline": 0.0,
+      "candidate": 0.0,
+      "abs_delta": 0.0,
+      "rel_delta_pct": null,
+      "higher_is_better": false,
+      "tolerance": null,
+      "regressed": false
+    },
+    {
+      "metric": "acl_block_rate",
+      "baseline": 1.0,
+      "candidate": 0.8,
+      "abs_delta": -0.19999999999999996,
+      "rel_delta_pct": -19.999999999999996,
+      "higher_is_better": true,
+      "tolerance": null,
+      "regressed": false
+    }
+  ],
+  "gate_passed": false,
+  "violations": [
+    {
+      "code": "acl_redline_breached",
+      "metric": "acl_block_rate",
+      "message": "ACL 红线未通过：存在泄露、未验证样本或无红线样本，阻断发布"
+    },
+    {
+      "code": "absolute_floor",
+      "metric": "mean_faithfulness",
+      "message": "mean_faithfulness 10.0% 低于下限 85.0%"
+    },
+    {
+      "code": "metric_regression",
+      "metric": null,
+      "message": "新增失败 1 条，超过上限 0"
+    }
+  ],
+  "blocking_reasons": [
+    "ACL 红线未通过：存在泄露、未验证样本或无红线样本，阻断发布",
+    "mean_faithfulness 10.0% 低于下限 85.0%",
+    "新增失败 1 条，超过上限 0"
+  ],
+  "newly_failed_sample_ids": [
+    "acl_cross_dept"
+  ],
+  "fixed_sample_ids": [],
+  "top_bad_cases": [
+    {
+      "sample_id": "acl_cross_dept",
+      "scenario": "store_sop",
+      "question": "鲜柠檬茶 500ml 标准配方",
+      "failure_category": "acl_leak",
+      "baseline_category": "none",
+      "newly_failed": true,
+      "severity": 115,
+      "detail": "hit=None; recall=None; mrr=None; faithfulness=None; accuracy=None; satisfaction=None; leaked_doc_ids=['fin_approval_matrix']; ; "
+    },
+    {
+      "sample_id": "drink_ice",
+      "scenario": "store_sop",
+      "question": "鲜柠檬茶 500ml 冰量和糖浆用量",
+      "failure_category": "hallucination",
+      "baseline_category": "hallucination",
+      "newly_failed": false,
+      "severity": 50,
+      "detail": "hit=1.0; recall=1.0; mrr=1.0; faithfulness=0.0; accuracy=1.0; satisfaction=4.0; leaked_doc_ids=[]; ; accuracy: 规则：标准事实关键词覆盖率; faithfulness: 规则：逐句检查是否存在于可见上下文，非语义裁判; satisfaction: 规则量表：1无解答；2过长；3需提炼；4简洁；5含可执行步骤；非真人满意度"
+    },
+    {
+      "sample_id": "drink_lemon",
+      "scenario": "store_sop",
+      "question": "鲜柠檬茶 500ml 柠檬片多少克",
+      "failure_category": "hallucination",
+      "baseline_category": "hallucination",
+      "newly_failed": false,
+      "severity": 50,
+      "detail": "hit=1.0; recall=1.0; mrr=1.0; faithfulness=0.0; accuracy=1.0; satisfaction=4.0; leaked_doc_ids=[]; ; accuracy: 规则：标准事实关键词覆盖率; faithfulness: 规则：逐句检查是否存在于可见上下文，非语义裁判; satisfaction: 规则量表：1无解答；2过长；3需提炼；4简洁；5含可执行步骤；非真人满意度"
+    },
+    {
+      "sample_id": "drink_milk",
+      "scenario": "store_sop",
+      "question": "珍珠奶茶 500ml 熟珍珠和牛奶各多少",
+      "failure_category": "hallucination",
+      "baseline_category": "hallucination",
+      "newly_failed": false,
+      "severity": 50,
+      "detail": "hit=1.0; recall=1.0; mrr=1.0; faithfulness=0.5; accuracy=1.0; satisfaction=5.0; leaked_doc_ids=[]; ; accuracy: 规则：标准事实关键词覆盖率; faithfulness: 规则：逐句检查是否存在于可见上下文，非语义裁判; satisfaction: 规则量表：1无解答；2过长；3需提炼；4简洁；5含可执行步骤；非真人满意度"
+    },
+    {
+      "sample_id": "drink_yogurt",
+      "scenario": "store_sop",
+      "question": "草莓酸奶 400ml 果酱放多少克",
+      "failure_category": "hallucination",
+      "baseline_category": "hallucination",
+      "newly_failed": false,
+      "severity": 50,
+      "detail": "hit=1.0; recall=1.0; mrr=1.0; faithfulness=0.5; accuracy=1.0; satisfaction=4.0; leaked_doc_ids=[]; ; accuracy: 规则：标准事实关键词覆盖率; faithfulness: 规则：逐句检查是否存在于可见上下文，非语义裁判; satisfaction: 规则量表：1无解答；2过长；3需提炼；4简洁；5含可执行步骤；非真人满意度"
+    },
+    {
+      "sample_id": "ice_leak",
+      "scenario": "store_sop",
+      "question": "制冰机排水管漏水，如何检查外部排水管路",
+      "failure_category": "hallucination",
+      "baseline_category": "hallucination",
+      "newly_failed": false,
+      "severity": 50,
+      "detail": "hit=1.0; recall=1.0; mrr=1.0; faithfulness=0.0; accuracy=1.0; satisfaction=5.0; leaked_doc_ids=[]; ; accuracy: 规则：标准事实关键词覆盖率; faithfulness: 规则：逐句检查是否存在于可见上下文，非语义裁判; satisfaction: 规则量表：1无解答；2过长；3需提炼；4简洁；5含可执行步骤；非真人满意度"
+    },
+    {
+      "sample_id": "ice_thin",
+      "scenario": "store_sop",
+      "question": "制冰机冰块偏薄，如何排查",
+      "failure_category": "hallucination",
+      "baseline_category": "hallucination",
+      "newly_failed": false,
+      "severity": 50,
+      "detail": "hit=1.0; recall=1.0; mrr=1.0; faithfulness=0.0; accuracy=1.0; satisfaction=4.0; leaked_doc_ids=[]; ; accuracy: 规则：标准事实关键词覆盖率; faithfulness: 规则：逐句检查是否存在于可见上下文，非语义裁判; satisfaction: 规则量表：1无解答；2过长；3需提炼；4简洁；5含可执行步骤；非真人满意度"
+    },
+    {
+      "sample_id": "ice_water",
+      "scenario": "store_sop",
+      "question": "制冰机不进水，门店可以检查什么",
+      "failure_category": "hallucination",
+      "baseline_category": "hallucination",
+      "newly_failed": false,
+      "severity": 50,
+      "detail": "hit=1.0; recall=1.0; mrr=1.0; faithfulness=0.0; accuracy=1.0; satisfaction=5.0; leaked_doc_ids=[]; ; accuracy: 规则：标准事实关键词覆盖率; faithfulness: 规则：逐句检查是否存在于可见上下文，非语义裁判; satisfaction: 规则量表：1无解答；2过长；3需提炼；4简洁；5含可执行步骤；非真人满意度"
+    },
+    {
+      "sample_id": "sealer_film",
+      "scenario": "store_sop",
+      "question": "封口机封口不牢，如何检查杯型和封口膜",
+      "failure_category": "hallucination",
+      "baseline_category": "hallucination",
+      "newly_failed": false,
+      "severity": 50,
+      "detail": "hit=1.0; recall=1.0; mrr=0.5; faithfulness=0.0; accuracy=1.0; satisfaction=5.0; leaked_doc_ids=[]; ; accuracy: 规则：标准事实关键词覆盖率; faithfulness: 规则：逐句检查是否存在于可见上下文，非语义裁判; satisfaction: 规则量表：1无解答；2过长；3需提炼；4简洁；5含可执行步骤；非真人满意度"
+    },
+    {
+      "sample_id": "trap_lemon",
+      "scenario": "store_sop",
+      "question": "有人说鲜柠檬茶柠檬片要放45g，请核对标准配方",
+      "failure_category": "hallucination",
+      "baseline_category": "hallucination",
+      "newly_failed": false,
+      "severity": 50,
+      "detail": "hit=1.0; recall=1.0; mrr=1.0; faithfulness=0.0; accuracy=1.0; satisfaction=4.0; leaked_doc_ids=[]; ; accuracy: 规则：标准事实关键词覆盖率; faithfulness: 规则：逐句检查是否存在于可见上下文，非语义裁判; satisfaction: 规则量表：1无解答；2过长；3需提炼；4简洁；5含可执行步骤；非真人满意度"
+    }
+  ]
+}

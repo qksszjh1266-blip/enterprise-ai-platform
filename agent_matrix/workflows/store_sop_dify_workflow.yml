@@ -1,0 +1,283 @@
+# =============================================================================
+# 门店 SOP 督导助手 —— Dify / HiAgent Workflow 编排结构说明
+#
+# 定位：这是编排**结构说明**，字段布局对齐 Dify DSL（advanced-chat）便于对照搭建；
+#       并非可直接导入的最终 DSL（节点 id、模型凭据、工具 provider_id 需在目标平台生成）。
+#       业务语义以 agent_matrix/store_sop/agent.py 为唯一真源，本文件与之冲突时以代码为准。
+#
+# 两种接入模式（二选一）：
+#   A. 薄编排（推荐）：Start → HTTP 调用 store_sop_chat_turn → Answer。
+#      全部循环、追问、引用核验、报修逻辑在 StoreSopAgent 内完成，评测中台回归结果可直接代表线上行为。
+#   B. 原生编排：在 Dify 画布上用节点复刻受控 Agent Loop，仅调用数据中台 search_knowledge_base 工具。
+#      仅用于业务方可视化调参；上线前必须用 eval_platform 以同一黄金集跑回归门禁，结论不得劣于模式 A。
+#
+# 工具导入：
+#   - 数据中台：data_platform.mcp_server.app.create_app().openapi()
+#       operationId: search_knowledge_base   POST /api/v1/knowledge/search
+#   - 智能体：  agent_matrix.store_sop.api.create_app().openapi()
+#       operationId: store_sop_chat_turn     POST /api/v1/agents/store-sop/turns
+#   - 工单系统：内部 OpenAPI，operationId: create_repair_ticket（由 TicketEscalationPort 生产适配器同源）
+#
+# 身份铁律：user_context 只能来自平台登录态 → 网关头（X-User-Id / X-Dept-Id / X-User-Roles），
+#           任何 LLM 节点的输出都不得写入身份字段或作为 HTTP 头。
+#
+# 已实现的冻结语义（原生编排复刻时同样必须满足）：
+#   - 模型调用只有意图槽位、白名单动作决策、引用生成、摘要压缩四处；其余话术均为确定性模板。
+#   - 安全隐患且槽位齐备时直接报修，不进入 search_kb 或 grounded_llm；信息缺失时先安全提示再追问。
+#   - 饮品数值与单位逐字核验，并绑定请求饮品所在表格行，防止同一父块其他配方的 45g 冒充柠檬片 40g。
+#   - 追问、拒答、检索不可用及步数兜底的评测 retrieved_contexts 均为空；跨部门拒答不携带引用或存在性信息。
+#   - 单轮设备排障评测样本必须包含设备和完整故障描述；多轮补槽位由独立会话测试验收。
+# =============================================================================
+
+kind: app
+version: "0.1.5"
+app:
+  mode: advanced-chat
+  name: 门店SOP督导助手
+  description: 饮品制作 / 设备排障多轮问答；强制溯源引用；排障失败转人工报修
+  icon: "🧋"
+  use_icon_as_answer_icon: false
+
+dependencies:
+  - type: tool
+    provider: data_platform_knowledge          # 由数据中台 OpenAPI 导入的自定义工具
+    operations: [search_knowledge_base]
+  - type: tool
+    provider: store_sop_agent                  # 模式 A 使用
+    operations: [store_sop_chat_turn]
+  - type: tool
+    provider: repair_ticket_system             # 模式 B 使用
+    operations: [create_repair_ticket]
+
+workflow:
+  # ---------------------------------------------------------------------------
+  # 会话变量：与 StoreSessionState 字段一一对应（模式 B 使用；模式 A 仅需 session_id）
+  # ---------------------------------------------------------------------------
+  conversation_variables:
+    - {name: session_id,          value_type: string,  value: "",  description: "StoreAgentTurnResponse.session_id 回填"}
+    - {name: intent,              value_type: string,  value: "",  description: "StoreIntent"}
+    - {name: equipment_model,     value_type: string,  value: ""}
+    - {name: equipment_id,        value_type: string,  value: ""}
+    - {name: fault_symptom,       value_type: string,  value: ""}
+    - {name: attempted_checks,    value_type: "array[string]", value: []}
+    - {name: drink_name,          value_type: string,  value: ""}
+    - {name: clarification_rounds, value_type: number, value: 0,   description: "上限 = StoreAgentConfig.max_clarification_rounds = 2"}
+    - {name: escalated_ticket_id, value_type: string,  value: "",  description: "非空时不得重复报修"}
+    - {name: conversation_summary, value_type: string, value: ""}
+
+  environment_variables:
+    - {name: DATA_PLATFORM_BASE_URL, value_type: string, value: "http://data-platform.internal"}
+    - {name: STORE_SOP_AGENT_BASE_URL, value_type: string, value: "http://store-sop-agent.internal"}
+    - {name: RETRIEVAL_TOP_K, value_type: number, value: 5}
+    - {name: MAX_CLARIFICATION_ROUNDS, value_type: number, value: 2}
+    - {name: PROMPT_VERSION, value_type: string, value: "store_sop.v1", description: "须与 agent_matrix/store_sop/prompts.py 一致"}
+
+  features:
+    opening_statement: 您好，我是门店 SOP 督导助手，可以解答饮品制作标准、设备巡检与故障排查等问题。
+    suggested_questions:
+      - 鲜柠檬茶 500ml 柠檬片放多少克？
+      - 制冰机不进水怎么处理？
+    file_upload: {enabled: false}
+    retriever_resource: {enabled: true}        # 前端展示 citations
+
+  graph:
+    # =========================================================================
+    # 模式 A：薄编排
+    # =========================================================================
+    mode_a:
+      nodes:
+        - id: start
+          type: start
+          title: 开始
+          variables: []                        # 使用 sys.query / sys.user_id；身份由平台网关注入
+        - id: call_agent
+          type: http-request
+          title: 调用门店 SOP 智能体
+          method: POST
+          url: "{{#env.STORE_SOP_AGENT_BASE_URL#}}/api/v1/agents/store-sop/turns"
+          # X-Dept-Id / X-User-Roles：HiAgent / 自研网关透传；Dify 需在反向代理层注入（不得由 LLM 节点生成）
+          headers: |
+            X-User-Id: {{#sys.user_id#}}
+            X-Dept-Id: {{#sys.dept_id#}}
+            X-User-Roles: {{#sys.roles#}}
+          body:
+            type: json
+            note: "首轮 conversation.session_id 为空串时必须改发 null（StoreAgentTurnRequest.session_id 的 pattern 不接受空串）；user_context 不传，由网关头注入"
+            data: |
+              {"session_id": "{{#conversation.session_id#}}", "message": "{{#sys.query#}}",
+               "trace_id": "{{#sys.conversation_id#}}"}
+          timeout: {connect: 3, read: 30}
+          retry_config: {retry_enabled: true, max_retries: 1, retry_interval: 500}   # 仅 retryable=True 的 409/503
+        - id: assign_session
+          type: assigner
+          title: 回填 session_id
+          items:
+            - {variable: conversation.session_id, value: "{{#call_agent.body.session_id#}}", operation: over-write}
+        - id: http_error_branch
+          type: if-else
+          title: 是否结构化错误
+          cases:
+            - case_id: tool_error
+              conditions: [{variable: call_agent.status_code, comparison_operator: ">=", value: 400}]
+        - id: answer_error
+          type: answer
+          title: 错误提示
+          answer: "服务暂时不可用：{{#call_agent.body.hint#}}"      # ToolErrorResponse.hint，不展示堆栈
+        - id: answer
+          type: answer
+          title: 回复
+          answer: "{{#call_agent.body.answer#}}"
+      edges:
+        - {source: start, target: call_agent}
+        - {source: call_agent, target: http_error_branch}
+        - {source: http_error_branch, sourceHandle: tool_error, target: answer_error}
+        - {source: http_error_branch, sourceHandle: "false", target: assign_session}
+        - {source: assign_session, target: answer}
+
+    # =========================================================================
+    # 模式 B：原生编排（复刻 StoreSopAgent 受控 Loop；Dify 无原生循环 → 每个用户轮次单向走一遍，
+    #         多轮靠 conversation_variables 承载，天然满足 max_steps 防死循环）
+    # =========================================================================
+    mode_b:
+      nodes:
+        - id: start
+          type: start
+          title: 开始
+
+        - id: intent_slot
+          type: parameter-extractor
+          title: ① 意图与槽位判定
+          model: {provider: "<prod_llm_provider>", name: "<prod_model>", completion_params: {temperature: 0}}
+          query: ["sys", "query"]
+          instruction: "引用 prompts.INTENT_SLOT_INSTRUCTIONS 全文；附 conversation.conversation_summary 与已知槽位"
+          parameters:                           # 对应 IntentSlotExtraction
+            - {name: intent, type: select, options: [drink_sop, equipment_fault, store_ops_general, out_of_scope, small_talk], required: true}
+            - {name: equipment_model, type: string, required: false}
+            - {name: equipment_id, type: string, required: false}
+            - {name: fault_symptom, type: string, required: false}
+            - {name: drink_name, type: string, required: false}
+            - {name: safety_hazard_suspected, type: boolean, required: true}
+            - {name: troubleshooting_failed, type: boolean, required: true}
+            - {name: rewritten_query, type: string, required: false}
+
+        - id: merge_slots
+          type: code
+          title: 合并槽位 + 安全关键词兜底
+          code_language: python3
+          note: "非空覆盖；意图切换清零 clarification_rounds；fault_symptom 命中 SAFETY_HAZARD_KEYWORDS → safety=true"
+          outputs: {intent: string, missing_slots: "array[string]", safety: boolean, query: string}
+
+        - id: route_intent
+          type: if-else
+          title: 意图路由
+          cases:
+            - {case_id: refuse,   conditions: [{variable: merge_slots.intent, comparison_operator: in, value: [out_of_scope, small_talk]}]}
+            - {case_id: safety_escalate, logical_operator: and, conditions: [
+                {variable: merge_slots.intent, comparison_operator: is, value: equipment_fault},
+                {variable: merge_slots.missing_slots, comparison_operator: empty},
+                {variable: merge_slots.safety, comparison_operator: is, value: true}],
+               note: "已存在 escalated_ticket_id 时只回显原单，不重复提交"}
+            - {case_id: clarify,  logical_operator: and, conditions: [
+                {variable: merge_slots.missing_slots, comparison_operator: not empty},
+                {variable: conversation.clarification_rounds, comparison_operator: "<", value: "{{#env.MAX_CLARIFICATION_ROUNDS#}}"}]}
+            - {case_id: retrieve, conditions: []}      # else
+
+        - id: refusal_answer
+          type: template-transform
+          title: 礼貌拒答（REFUSAL_TEMPLATES）
+          note: "out_of_scope → CROSS_DEPT；small_talk → OUT_OF_SCOPE；不检索、不确认文档存在"
+
+        - id: clarify_answer
+          type: template-transform
+          title: ② 追问澄清（CLARIFICATION_QUESTION_TEMPLATES，最多 2 问）
+          note: "safety=true 时首句使用 SAFETY_CLARIFICATION_PREFIX；随后 clarification_rounds += 1"
+
+        - id: search_kb
+          type: tool
+          title: ③ 数据中台混合检索
+          provider_id: data_platform_knowledge
+          tool_name: search_knowledge_base
+          tool_parameters:                      # 对应 SearchRequest；user_context 由网关头覆盖，不由 LLM 生成
+            query: "{{#merge_slots.query#}}"
+            top_k: "{{#env.RETRIEVAL_TOP_K#}}"
+            enable_rerank: true
+          error_strategy: fail-branch           # 4xx/5xx → ToolErrorResponse
+
+        - id: retrieval_unavailable_answer
+          type: answer
+          title: 检索不可用风险提示（RETRIEVAL_UNAVAILABLE_NOTICE）
+
+        - id: evidence_branch
+          type: if-else
+          title: 是否有依据 / 是否需报修
+          cases:
+            - {case_id: escalate, logical_operator: and, conditions: [
+                {variable: merge_slots.intent, comparison_operator: is, value: equipment_fault},
+                {variable: conversation.escalated_ticket_id, comparison_operator: empty}],
+               note: "且 (troubleshooting_failed 或 safety 或 search_kb.results 为空)"}
+            - {case_id: no_evidence, conditions: [{variable: search_kb.results, comparison_operator: empty}]}
+            - {case_id: generate, conditions: []}
+
+        - id: grounded_llm
+          type: llm
+          title: ④ 引用生成（GroundedAnswerDraft）
+          model: {provider: "<prod_llm_provider>", name: "<prod_model>", completion_params: {temperature: 0}}
+          prompt_template:
+            - {role: system, text: "compose_system_prompt(intent, degraded) + GROUNDED_ANSWER_INSTRUCTIONS"}
+            - {role: user,   text: "render_context_block(search_kb.results) + 已知槽位 + sys.query"}
+          structured_output: {enabled: true, schema_ref: agent_matrix.store_sop.models.GroundedAnswerDraft}
+
+        - id: verify_citations
+          type: code
+          title: ⑤ 确定性引用核验
+          note: "与 StoreSopAgent._verify_citations 同规则：编号越界 / 数值非原文子串 / insufficient_evidence → 失败转 NO_EVIDENCE 拒答"
+          outputs: {passed: boolean, answer: string, citations: "array[object]"}
+
+        - id: degraded_notice
+          type: template-transform
+          title: 降级风险提示前缀（search_kb.degraded=true 时插入 DEGRADED_NOTICE_TEMPLATE）
+
+        - id: ticket_draft
+          type: code
+          title: ⑥ 生成 RepairTicketDraft
+          note: "reporter_user_id / dept_id 取 sys.user_id 与网关部门；idempotency_key = session:equipment:symptom"
+
+        - id: submit_ticket
+          type: tool
+          title: 提交报修工单
+          provider_id: repair_ticket_system
+          tool_name: create_repair_ticket
+          error_strategy: fail-branch           # 失败 → 告知草稿已生成 + 电话升级路径，不得假称成功
+
+        - id: assign_ticket
+          type: assigner
+          title: 记录 escalated_ticket_id
+        - id: final_answer
+          type: answer
+          title: 回复
+          answer: "{{#degraded_notice.output#}}{{#verify_citations.answer#}}"
+
+      edges:
+        - {source: start, target: intent_slot}
+        - {source: intent_slot, target: merge_slots}
+        - {source: merge_slots, target: route_intent}
+        - {source: route_intent, sourceHandle: refuse, target: refusal_answer}
+        - {source: route_intent, sourceHandle: safety_escalate, target: ticket_draft}
+        - {source: route_intent, sourceHandle: clarify, target: clarify_answer}
+        - {source: route_intent, sourceHandle: retrieve, target: search_kb}
+        - {source: search_kb, sourceHandle: fail-branch, target: retrieval_unavailable_answer}
+        - {source: search_kb, target: evidence_branch}
+        - {source: evidence_branch, sourceHandle: escalate, target: ticket_draft}
+        - {source: evidence_branch, sourceHandle: no_evidence, target: refusal_answer}
+        - {source: evidence_branch, sourceHandle: generate, target: grounded_llm}
+        - {source: grounded_llm, target: verify_citations}
+        - {source: verify_citations, target: degraded_notice}
+        - {source: degraded_notice, target: final_answer}
+        - {source: ticket_draft, target: submit_ticket}
+        - {source: submit_ticket, target: assign_ticket}
+        - {source: assign_ticket, target: final_answer}
+
+# -----------------------------------------------------------------------------
+# HiAgent 映射：parameter-extractor → 「信息抽取」；if-else → 「条件分支」；tool → 「插件」（同一 OpenAPI 导入）；
+#              code → 「代码」；conversation_variables → 「会话变量」。其余语义不变。
+# -----------------------------------------------------------------------------

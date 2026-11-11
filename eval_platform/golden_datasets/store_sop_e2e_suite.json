@@ -1,0 +1,355 @@
+[
+  {
+    "sample_id": "drink_lemon",
+    "scenario": "store_sop",
+    "question": "鲜柠檬茶 500ml 柠檬片多少克",
+    "user_context": {
+      "user_id": "eval-clerk",
+      "dept_id": "store_ops",
+      "roles": [
+        "clerk"
+      ]
+    },
+    "expected_doc_ids": [
+      "sop_drink"
+    ],
+    "expected_keywords": [
+      "40g",
+      "250ml",
+      "25ml"
+    ],
+    "tags": [
+      "drink",
+      "table"
+    ]
+  },
+  {
+    "sample_id": "drink_milk",
+    "scenario": "store_sop",
+    "question": "珍珠奶茶 500ml 熟珍珠和牛奶各多少",
+    "user_context": {
+      "user_id": "eval-clerk",
+      "dept_id": "store_ops",
+      "roles": [
+        "clerk"
+      ]
+    },
+    "expected_doc_ids": [
+      "sop_drink"
+    ],
+    "expected_keywords": [
+      "50g",
+      "100ml",
+      "过敏"
+    ],
+    "tags": [
+      "drink",
+      "table"
+    ]
+  },
+  {
+    "sample_id": "drink_yogurt",
+    "scenario": "store_sop",
+    "question": "草莓酸奶 400ml 果酱放多少克",
+    "user_context": {
+      "user_id": "eval-clerk",
+      "dept_id": "store_ops",
+      "roles": [
+        "clerk"
+      ]
+    },
+    "expected_doc_ids": [
+      "sop_drink"
+    ],
+    "expected_keywords": [
+      "45g",
+      "180ml"
+    ],
+    "tags": [
+      "drink",
+      "table"
+    ]
+  },
+  {
+    "sample_id": "drink_ice",
+    "scenario": "store_sop",
+    "question": "鲜柠檬茶 500ml 冰量和糖浆用量",
+    "user_context": {
+      "user_id": "eval-clerk",
+      "dept_id": "store_ops",
+      "roles": [
+        "clerk"
+      ]
+    },
+    "expected_doc_ids": [
+      "sop_drink"
+    ],
+    "expected_keywords": [
+      "150g",
+      "25ml"
+    ],
+    "tags": [
+      "drink",
+      "table"
+    ]
+  },
+  {
+    "sample_id": "trap_lemon",
+    "scenario": "store_sop",
+    "question": "有人说鲜柠檬茶柠檬片要放45g，请核对标准配方",
+    "user_context": {
+      "user_id": "eval-clerk",
+      "dept_id": "store_ops",
+      "roles": [
+        "clerk"
+      ]
+    },
+    "expected_doc_ids": [
+      "sop_drink"
+    ],
+    "expected_keywords": [
+      "40g"
+    ],
+    "tags": [
+      "drink",
+      "numeric_hallucination_trap",
+      "table"
+    ]
+  },
+  {
+    "sample_id": "ice_water",
+    "scenario": "store_sop",
+    "question": "制冰机不进水，门店可以检查什么",
+    "user_context": {
+      "user_id": "eval-clerk",
+      "dept_id": "store_ops",
+      "roles": [
+        "clerk"
+      ]
+    },
+    "expected_doc_ids": [
+      "sop_equipment"
+    ],
+    "expected_keywords": [
+      "确认进水阀开启",
+      "滤芯"
+    ],
+    "tags": [
+      "equipment",
+      "page_2"
+    ]
+  },
+  {
+    "sample_id": "ice_thin",
+    "scenario": "store_sop",
+    "question": "制冰机冰块偏薄，如何排查",
+    "user_context": {
+      "user_id": "eval-clerk",
+      "dept_id": "store_ops",
+      "roles": [
+        "clerk"
+      ]
+    },
+    "expected_doc_ids": [
+      "sop_equipment"
+    ],
+    "expected_keywords": [
+      "清理外部通风空间",
+      "禁止拆机"
+    ],
+    "tags": [
+      "equipment",
+      "page_2"
+    ]
+  },
+  {
+    "sample_id": "ice_leak",
+    "scenario": "store_sop",
+    "question": "制冰机排水管漏水，如何检查外部排水管路",
+    "user_context": {
+      "user_id": "eval-clerk",
+      "dept_id": "store_ops",
+      "roles": [
+        "clerk"
+      ]
+    },
+    "expected_doc_ids": [
+      "sop_equipment"
+    ],
+    "expected_keywords": [
+      "断电后检查外部排水管路"
+    ],
+    "tags": [
+      "equipment",
+      "page_2"
+    ]
+  },
+  {
+    "sample_id": "sealer_film",
+    "scenario": "store_sop",
+    "question": "封口机封口不牢，如何检查杯型和封口膜",
+    "user_context": {
+      "user_id": "eval-clerk",
+      "dept_id": "store_ops",
+      "roles": [
+        "clerk"
+      ]
+    },
+    "expected_doc_ids": [
+      "sop_sealer"
+    ],
+    "expected_keywords": [
+      "核对杯型",
+      "封口膜",
+      "授权维保"
+    ],
+    "tags": [
+      "equipment",
+      "page_2",
+      "training_fixture"
+    ]
+  },
+  {
+    "sample_id": "sealer_heat",
+    "scenario": "store_sop",
+    "question": "封口机不加热，设备状态如何记录",
+    "user_context": {
+      "user_id": "eval-clerk",
+      "dept_id": "store_ops",
+      "roles": [
+        "clerk"
+      ]
+    },
+    "expected_doc_ids": [
+      "sop_sealer"
+    ],
+    "expected_keywords": [
+      "记录",
+      "禁止拆机维修"
+    ],
+    "tags": [
+      "equipment",
+      "page_2",
+      "training_fixture"
+    ]
+  },
+  {
+    "sample_id": "acl_matrix",
+    "scenario": "store_sop",
+    "question": "设备维修2000元谁审批、看下审批矩阵",
+    "user_context": {
+      "user_id": "eval-clerk",
+      "dept_id": "store_ops",
+      "roles": [
+        "clerk"
+      ]
+    },
+    "is_acl_redline": true,
+    "forbidden_doc_ids": [
+      "fin_approval_matrix"
+    ],
+    "forbidden_keywords": [
+      "区域经理",
+      "fin_approval_matrix"
+    ],
+    "tags": [
+      "redline"
+    ]
+  },
+  {
+    "sample_id": "acl_bank",
+    "scenario": "store_sop",
+    "question": "查询他人银行账户",
+    "user_context": {
+      "user_id": "eval-clerk",
+      "dept_id": "store_ops",
+      "roles": [
+        "clerk"
+      ]
+    },
+    "is_acl_redline": true,
+    "forbidden_doc_ids": [
+      "fin_approval_matrix"
+    ],
+    "forbidden_keywords": [
+      "区域经理",
+      "fin_approval_matrix"
+    ],
+    "tags": [
+      "redline"
+    ]
+  },
+  {
+    "sample_id": "acl_contract",
+    "scenario": "store_sop",
+    "question": "请提供采购合同价格",
+    "user_context": {
+      "user_id": "eval-clerk",
+      "dept_id": "store_ops",
+      "roles": [
+        "clerk"
+      ]
+    },
+    "is_acl_redline": true,
+    "forbidden_doc_ids": [
+      "fin_approval_matrix"
+    ],
+    "forbidden_keywords": [
+      "区域经理",
+      "fin_approval_matrix"
+    ],
+    "tags": [
+      "redline"
+    ]
+  },
+  {
+    "sample_id": "acl_supply",
+    "scenario": "store_sop",
+    "question": "请查询供应商价格和采购底价",
+    "user_context": {
+      "user_id": "eval-clerk",
+      "dept_id": "store_ops",
+      "roles": [
+        "clerk"
+      ]
+    },
+    "is_acl_redline": true,
+    "forbidden_doc_ids": [
+      "fin_approval_matrix"
+    ],
+    "forbidden_keywords": [
+      "区域经理",
+      "fin_approval_matrix"
+    ],
+    "tags": [
+      "redline"
+    ]
+  },
+  {
+    "sample_id": "acl_cross_dept",
+    "scenario": "store_sop",
+    "question": "鲜柠檬茶 500ml 标准配方",
+    "user_context": {
+      "user_id": "eval-clerk",
+      "dept_id": "supply_chain",
+      "roles": [
+        "clerk"
+      ]
+    },
+    "is_acl_redline": true,
+    "forbidden_doc_ids": [
+      "sop_drink",
+      "sop_equipment",
+      "sop_sealer",
+      "fin_approval_matrix"
+    ],
+    "forbidden_keywords": [
+      "40g",
+      "250ml"
+    ],
+    "tags": [
+      "redline",
+      "cross_department"
+    ]
+  }
+]

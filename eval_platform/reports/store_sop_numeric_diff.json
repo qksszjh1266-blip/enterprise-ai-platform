@@ -1,0 +1,264 @@
+{
+  "baseline_run_id": "store-sop-baseline",
+  "candidate_run_id": "store-sop-numeric-tamper",
+  "baseline_version": "baseline",
+  "candidate_version": "numeric-tamper",
+  "suite_comparable": true,
+  "metric_deltas": [
+    {
+      "metric": "retrieval_hit_rate",
+      "baseline": 1.0,
+      "candidate": 0.7,
+      "abs_delta": -0.30000000000000004,
+      "rel_delta_pct": -30.000000000000004,
+      "higher_is_better": true,
+      "tolerance": 0.02,
+      "regressed": true
+    },
+    {
+      "metric": "mean_recall_at_k",
+      "baseline": 1.0,
+      "candidate": 0.7,
+      "abs_delta": -0.30000000000000004,
+      "rel_delta_pct": -30.000000000000004,
+      "higher_is_better": true,
+      "tolerance": 0.03,
+      "regressed": true
+    },
+    {
+      "metric": "mean_mrr",
+      "baseline": 0.8833333333333334,
+      "candidate": 0.5833333333333333,
+      "abs_delta": -0.30000000000000016,
+      "rel_delta_pct": -33.96226415094341,
+      "higher_is_better": true,
+      "tolerance": 0.03,
+      "regressed": true
+    },
+    {
+      "metric": "answer_accuracy_rate",
+      "baseline": 1.0,
+      "candidate": 0.7,
+      "abs_delta": -0.30000000000000004,
+      "rel_delta_pct": -30.000000000000004,
+      "higher_is_better": true,
+      "tolerance": 0.03,
+      "regressed": true
+    },
+    {
+      "metric": "mean_faithfulness",
+      "baseline": 0.1,
+      "candidate": 0.1,
+      "abs_delta": 0.0,
+      "rel_delta_pct": 0.0,
+      "higher_is_better": true,
+      "tolerance": 0.03,
+      "regressed": false
+    },
+    {
+      "metric": "mean_satisfaction",
+      "baseline": 4.5,
+      "candidate": 4.8,
+      "abs_delta": 0.2999999999999998,
+      "rel_delta_pct": 6.6666666666666625,
+      "higher_is_better": true,
+      "tolerance": 0.2,
+      "regressed": false
+    },
+    {
+      "metric": "latency_p50_ms",
+      "baseline": 15.434886998264119,
+      "candidate": 12.62818199757021,
+      "abs_delta": -2.80670500069391,
+      "rel_delta_pct": -18.184162935624766,
+      "higher_is_better": false,
+      "tolerance": null,
+      "regressed": false
+    },
+    {
+      "metric": "latency_p95_ms",
+      "baseline": 23.413270900709904,
+      "candidate": 18.692344398004927,
+      "abs_delta": -4.720926502704977,
+      "rel_delta_pct": -20.16346422815206,
+      "higher_is_better": false,
+      "tolerance": 234.13270900709904,
+      "regressed": false
+    },
+    {
+      "metric": "degraded_rate",
+      "baseline": 0.0,
+      "candidate": 0.0,
+      "abs_delta": 0.0,
+      "rel_delta_pct": null,
+      "higher_is_better": false,
+      "tolerance": null,
+      "regressed": false
+    },
+    {
+      "metric": "error_rate",
+      "baseline": 0.0,
+      "candidate": 0.0,
+      "abs_delta": 0.0,
+      "rel_delta_pct": null,
+      "higher_is_better": false,
+      "tolerance": null,
+      "regressed": false
+    },
+    {
+      "metric": "acl_block_rate",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "abs_delta": 0.0,
+      "rel_delta_pct": 0.0,
+      "higher_is_better": true,
+      "tolerance": null,
+      "regressed": false
+    }
+  ],
+  "gate_passed": false,
+  "violations": [
+    {
+      "code": "metric_regression",
+      "metric": "retrieval_hit_rate",
+      "message": "retrieval_hit_rate 回退 30.0pp（基线 100.0% → 候选 70.0%，容忍 2.0pp）"
+    },
+    {
+      "code": "metric_regression",
+      "metric": "mean_recall_at_k",
+      "message": "mean_recall_at_k 回退 30.0pp（基线 100.0% → 候选 70.0%，容忍 3.0pp）"
+    },
+    {
+      "code": "metric_regression",
+      "metric": "mean_mrr",
+      "message": "mean_mrr 回退 30.0pp（基线 88.3% → 候选 58.3%，容忍 3.0pp）"
+    },
+    {
+      "code": "metric_regression",
+      "metric": "answer_accuracy_rate",
+      "message": "answer_accuracy_rate 回退 30.0pp（基线 100.0% → 候选 70.0%，容忍 3.0pp）"
+    },
+    {
+      "code": "absolute_floor",
+      "metric": "retrieval_hit_rate",
+      "message": "retrieval_hit_rate 70.0% 低于下限 80.0%"
+    },
+    {
+      "code": "absolute_floor",
+      "metric": "mean_faithfulness",
+      "message": "mean_faithfulness 10.0% 低于下限 85.0%"
+    }
+  ],
+  "blocking_reasons": [
+    "retrieval_hit_rate 回退 30.0pp（基线 100.0% → 候选 70.0%，容忍 2.0pp）",
+    "mean_recall_at_k 回退 30.0pp（基线 100.0% → 候选 70.0%，容忍 3.0pp）",
+    "mean_mrr 回退 30.0pp（基线 88.3% → 候选 58.3%，容忍 3.0pp）",
+    "answer_accuracy_rate 回退 30.0pp（基线 100.0% → 候选 70.0%，容忍 3.0pp）",
+    "retrieval_hit_rate 70.0% 低于下限 80.0%",
+    "mean_faithfulness 10.0% 低于下限 85.0%"
+  ],
+  "newly_failed_sample_ids": [],
+  "fixed_sample_ids": [],
+  "top_bad_cases": [
+    {
+      "sample_id": "drink_ice",
+      "scenario": "store_sop",
+      "question": "鲜柠檬茶 500ml 冰量和糖浆用量",
+      "failure_category": "retrieval_miss",
+      "baseline_category": "hallucination",
+      "newly_failed": false,
+      "severity": 60,
+      "detail": "hit=0.0; recall=0.0; mrr=0.0; faithfulness=0.0; accuracy=0.0; satisfaction=5.0; leaked_doc_ids=[]; ; accuracy: 规则：标准事实关键词覆盖率; faithfulness: 规则：逐句检查是否存在于可见上下文，非语义裁判; satisfaction: 规则量表：1无解答；2过长；3需提炼；4简洁；5含可执行步骤；非真人满意度"
+    },
+    {
+      "sample_id": "drink_lemon",
+      "scenario": "store_sop",
+      "question": "鲜柠檬茶 500ml 柠檬片多少克",
+      "failure_category": "retrieval_miss",
+      "baseline_category": "hallucination",
+      "newly_failed": false,
+      "severity": 60,
+      "detail": "hit=0.0; recall=0.0; mrr=0.0; faithfulness=0.0; accuracy=0.0; satisfaction=5.0; leaked_doc_ids=[]; ; accuracy: 规则：标准事实关键词覆盖率; faithfulness: 规则：逐句检查是否存在于可见上下文，非语义裁判; satisfaction: 规则量表：1无解答；2过长；3需提炼；4简洁；5含可执行步骤；非真人满意度"
+    },
+    {
+      "sample_id": "trap_lemon",
+      "scenario": "store_sop",
+      "question": "有人说鲜柠檬茶柠檬片要放45g，请核对标准配方",
+      "failure_category": "retrieval_miss",
+      "baseline_category": "hallucination",
+      "newly_failed": false,
+      "severity": 60,
+      "detail": "hit=0.0; recall=0.0; mrr=0.0; faithfulness=0.0; accuracy=0.0; satisfaction=5.0; leaked_doc_ids=[]; ; accuracy: 规则：标准事实关键词覆盖率; faithfulness: 规则：逐句检查是否存在于可见上下文，非语义裁判; satisfaction: 规则量表：1无解答；2过长；3需提炼；4简洁；5含可执行步骤；非真人满意度"
+    },
+    {
+      "sample_id": "drink_milk",
+      "scenario": "store_sop",
+      "question": "珍珠奶茶 500ml 熟珍珠和牛奶各多少",
+      "failure_category": "hallucination",
+      "baseline_category": "hallucination",
+      "newly_failed": false,
+      "severity": 50,
+      "detail": "hit=1.0; recall=1.0; mrr=1.0; faithfulness=0.5; accuracy=1.0; satisfaction=5.0; leaked_doc_ids=[]; ; accuracy: 规则：标准事实关键词覆盖率; faithfulness: 规则：逐句检查是否存在于可见上下文，非语义裁判; satisfaction: 规则量表：1无解答；2过长；3需提炼；4简洁；5含可执行步骤；非真人满意度"
+    },
+    {
+      "sample_id": "drink_yogurt",
+      "scenario": "store_sop",
+      "question": "草莓酸奶 400ml 果酱放多少克",
+      "failure_category": "hallucination",
+      "baseline_category": "hallucination",
+      "newly_failed": false,
+      "severity": 50,
+      "detail": "hit=1.0; recall=1.0; mrr=1.0; faithfulness=0.5; accuracy=1.0; satisfaction=4.0; leaked_doc_ids=[]; ; accuracy: 规则：标准事实关键词覆盖率; faithfulness: 规则：逐句检查是否存在于可见上下文，非语义裁判; satisfaction: 规则量表：1无解答；2过长；3需提炼；4简洁；5含可执行步骤；非真人满意度"
+    },
+    {
+      "sample_id": "ice_leak",
+      "scenario": "store_sop",
+      "question": "制冰机排水管漏水，如何检查外部排水管路",
+      "failure_category": "hallucination",
+      "baseline_category": "hallucination",
+      "newly_failed": false,
+      "severity": 50,
+      "detail": "hit=1.0; recall=1.0; mrr=1.0; faithfulness=0.0; accuracy=1.0; satisfaction=5.0; leaked_doc_ids=[]; ; accuracy: 规则：标准事实关键词覆盖率; faithfulness: 规则：逐句检查是否存在于可见上下文，非语义裁判; satisfaction: 规则量表：1无解答；2过长；3需提炼；4简洁；5含可执行步骤；非真人满意度"
+    },
+    {
+      "sample_id": "ice_thin",
+      "scenario": "store_sop",
+      "question": "制冰机冰块偏薄，如何排查",
+      "failure_category": "hallucination",
+      "baseline_category": "hallucination",
+      "newly_failed": false,
+      "severity": 50,
+      "detail": "hit=1.0; recall=1.0; mrr=1.0; faithfulness=0.0; accuracy=1.0; satisfaction=4.0; leaked_doc_ids=[]; ; accuracy: 规则：标准事实关键词覆盖率; faithfulness: 规则：逐句检查是否存在于可见上下文，非语义裁判; satisfaction: 规则量表：1无解答；2过长；3需提炼；4简洁；5含可执行步骤；非真人满意度"
+    },
+    {
+      "sample_id": "ice_water",
+      "scenario": "store_sop",
+      "question": "制冰机不进水，门店可以检查什么",
+      "failure_category": "hallucination",
+      "baseline_category": "hallucination",
+      "newly_failed": false,
+      "severity": 50,
+      "detail": "hit=1.0; recall=1.0; mrr=1.0; faithfulness=0.0; accuracy=1.0; satisfaction=5.0; leaked_doc_ids=[]; ; accuracy: 规则：标准事实关键词覆盖率; faithfulness: 规则：逐句检查是否存在于可见上下文，非语义裁判; satisfaction: 规则量表：1无解答；2过长；3需提炼；4简洁；5含可执行步骤；非真人满意度"
+    },
+    {
+      "sample_id": "sealer_film",
+      "scenario": "store_sop",
+      "question": "封口机封口不牢，如何检查杯型和封口膜",
+      "failure_category": "hallucination",
+      "baseline_category": "hallucination",
+      "newly_failed": false,
+      "severity": 50,
+      "detail": "hit=1.0; recall=1.0; mrr=0.5; faithfulness=0.0; accuracy=1.0; satisfaction=5.0; leaked_doc_ids=[]; ; accuracy: 规则：标准事实关键词覆盖率; faithfulness: 规则：逐句检查是否存在于可见上下文，非语义裁判; satisfaction: 规则量表：1无解答；2过长；3需提炼；4简洁；5含可执行步骤；非真人满意度"
+    },
+    {
+      "sample_id": "sealer_heat",
+      "scenario": "store_sop",
+      "question": "封口机不加热，设备状态如何记录",
+      "failure_category": "ranking_low",
+      "baseline_category": "ranking_low",
+      "newly_failed": false,
+      "severity": 30,
+      "detail": "hit=1.0; recall=1.0; mrr=0.3333333333333333; faithfulness=0.0; accuracy=1.0; satisfaction=5.0; leaked_doc_ids=[]; ; accuracy: 规则：标准事实关键词覆盖率; faithfulness: 规则：逐句检查是否存在于可见上下文，非语义裁判; satisfaction: 规则量表：1无解答；2过长；3需提炼；4简洁；5含可执行步骤；非真人满意度"
+    }
+  ]
+}
