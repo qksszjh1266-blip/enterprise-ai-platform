@@ -1,0 +1,169 @@
+# =============================================================================
+# 财务报销与加盟采购合同合规预审助手 —— 平台 Workflow 编排定义
+#
+# 定位：标准平台编排结构定义，字段布局对齐 Dify DSL（workflow 模式）便于在 Dify / HiAgent 上对照搭建；
+#       节点 id、模型凭据、工具 provider_id 需在目标平台生成。业务语义以 agent_matrix/finance_audit/agent.py
+#       为唯一真源，本文件与之冲突时以代码为准。
+#
+# 只提供"薄编排"一种模式（与 供应链 BI 相同，**不提供**画布原生复刻）：
+#   预审的安全性依赖四件必须在服务端闭环内的东西——PiiRedactor（送模型 / 日志 / 工单前确定性脱敏 + 出口守卫）、
+#   DeterministicFinanceRuleEngine（Decimal 勾稽、重复发票、拆单）、闭锁引用校验、确定性路由合成。
+#   若在画布上用 LLM 节点读单据，原始银行卡号 / 身份证号会直接进入平台模型日志；若用 LLM 节点决定审批路由，
+#   任何画布改动都能把红线单据改成自动放行。故编排层只做：调用 → 按 route 分流 → 模板渲染 → 下游通知。
+#
+# 工具导入：
+#   - 智能体：agent_matrix.finance_audit.api.create_app().openapi()
+#       operationId: finance_audit_submit           POST /api/v1/agents/finance-audit/audit
+#       operationId: finance_audit_get_rule_limits  GET  /api/v1/agents/finance-audit/rule-limits
+#
+# 身份铁律：user_context 只能来自平台登录态 → 网关头（X-User-Id / X-Dept-Id / X-User-Roles）；
+#           调用人须为 finance / finance_manager / legal 角色。submission.applicant 是单据事实，不是调用身份。
+#
+# 冻结语义（随实现同步）：
+#   - 金额 / 税率 / 数量以字符串传入（Decimal），任何节点不得把金额转为数字再拼接（JSON 数字 → 422）。
+#   - 审批路由只由服务端确定性合成：HIGH / CRITICAL / 红线 finding 一票否决 AUTO_APPROVE；REJECT 只来自确定性规则。
+#   - ESCALATE_HUMAN 时服务端已按幂等键创建人工复核工单（human_approval_ticket_id），编排层**不得**再建单。
+#   - 模型 / 制度检索不可用时服务端兜底 ESCALATE_HUMAN，不会降级为自动放行。
+#   - 所有输出（conclusion / findings / audit_summary）已脱敏；编排层不得回查原始单据补全隐私字段。
+# =============================================================================
+
+kind: app
+version: "0.1.5"
+app:
+  mode: workflow
+  name: 财务合规预审助手
+  description: 门店费用报销与加盟采购合同的合规预审（隐私脱敏 · Decimal 金额勾稽 · 重复发票与拆单拦截 · 高风险转人工）
+  icon: "🧾"
+  use_icon_as_answer_icon: false
+
+dependencies:
+  - type: tool
+    provider: finance_audit_agent                # 由 finance_audit.api OpenAPI 导入的自定义工具
+    operations: [finance_audit_submit, finance_audit_get_rule_limits]
+
+workflow:
+  environment_variables:
+    - {name: FINANCE_AUDIT_BASE_URL, value_type: string, value: "http://finance-audit-agent.internal"}
+    - {name: AUDIT_RENDER_VERSION, value_type: string, value: "finance_audit.v1", description: "须与 agent_matrix/finance_audit/agent.py AUDIT_RENDER_VERSION 一致"}
+    - {name: RULESET_VERSION, value_type: string, value: "finance_rules.v1", description: "须与 FinanceRuleConfig.ruleset_version 默认值一致"}
+
+  features:
+    opening_statement: 您好，我是财务合规预审助手。请由费控系统推送报销单或合同（JSON），我会完成金额勾稽、制度核验与审批路由。
+    suggested_questions: []
+    file_upload: {enabled: false}               # 不接收附件原件（当前接口不包含 OCR）
+
+  graph:
+    nodes:
+      - id: start
+        type: start
+        title: 开始
+        note: "由费控系统 / OA 以 API 触发；submission_json 为 ExpenseAuditSubmission 或 ContractAuditSubmission 的 JSON"
+        variables:
+          - {variable: submission_json, label: 待预审单据（JSON）, type: paragraph, required: true, max_length: 60000}
+
+      - id: call_agent
+        type: http-request
+        title: 调用财务预审智能体
+        method: POST
+        url: "{{#env.FINANCE_AUDIT_BASE_URL#}}/api/v1/agents/finance-audit/audit"
+        # X-Dept-Id / X-User-Roles：HiAgent / 自研网关透传；Dify 需在反向代理层注入（不得由 LLM 节点生成）
+        headers: |
+          X-User-Id: {{#sys.user_id#}}
+          X-Dept-Id: {{#sys.dept_id#}}
+          X-User-Roles: {{#sys.roles#}}
+        body:
+          type: json
+          note: "submission 原样透传（不得经过 LLM / 代码节点改写，金额保持字符串）；user_context 不传，由网关头注入"
+          data: |
+            {"submission": {{#start.submission_json#}}, "trace_id": "{{#sys.workflow_run_id#}}"}
+        timeout: {connect: 3, read: 60}         # ≥ ledger + retrieval（并发）+ model_timeout_s × 2 + approval 的经验上限
+        retry_config: {retry_enabled: true, max_retries: 1, retry_interval: 1000}   # 仅 retryable=True 的 502/503；工单幂等
+
+      - id: http_error_branch
+        type: if-else
+        title: 是否结构化错误
+        cases:
+          - case_id: tool_error
+            conditions: [{variable: call_agent.status_code, comparison_operator: ">=", value: 400}]
+
+      - id: answer_error
+        type: end
+        title: 错误提示
+        outputs:
+          - {variable: text, value_selector: [call_agent, body, hint]}           # ToolErrorResponse.hint，不展示堆栈
+          - {variable: error_code, value_selector: [call_agent, body, error_code]}
+
+      - id: route_branch
+        type: if-else
+        title: 按审批路由分流
+        cases:
+          - case_id: auto_approve
+            conditions: [{variable: call_agent.body.route, comparison_operator: is, value: AUTO_APPROVE}]
+          - case_id: needs_supplement
+            conditions: [{variable: call_agent.body.route, comparison_operator: is, value: NEEDS_SUPPLEMENT}]
+          - case_id: escalate_human
+            conditions: [{variable: call_agent.body.route, comparison_operator: is, value: ESCALATE_HUMAN}]
+        # 其余（REJECT）走 false 分支
+
+      - id: render_report
+        type: template-transform
+        title: 渲染预审报告
+        note: "纯模板，不调用 LLM；不得改写 conclusion 中的金额与编码（勾稽与路由已在服务端确定性完成）"
+        variables:
+          - {variable: body, value_selector: [call_agent, body]}
+        template: |
+          {{ body.conclusion }}
+
+          **金额勾稽**：申报 {{ body.reconciliation.declared_total }} / 核算 {{ body.reconciliation.computed_total }} / 偏差 {{ body.reconciliation.total_deviation }}{% if body.reconciliation.has_duplicate_invoice %}　⚠ 重复发票{% endif %}{% if body.reconciliation.split_suspected %}　⚠ 疑似拆单{% endif %}
+
+          {% if body.findings %}| 风险等级 | 编码 | 说明 | 制度依据 |
+          |---|---|---|---|
+          {% for f in body.findings %}| {{ f.risk_level }}{% if f.is_redline %} 🔴红线{% endif %} | {{ f.code }} | {{ f.detail }} | {% for c in f.citations %}{{ c.section_path }}{% if not loop.last %}；{% endif %}{% endfor %} |
+          {% endfor %}{% endif %}
+
+      - id: end_auto_approve
+        type: end
+        title: 预审通过
+        outputs:
+          - {variable: text, value_selector: [render_report, output]}
+          - {variable: approver_tier, value_selector: [call_agent, body, approver_tier]}   # 费控系统据此推送常规审批人
+          - {variable: token_cost, value_selector: [call_agent, body, token_cost]}
+
+      - id: end_needs_supplement
+        type: end
+        title: 退回补正
+        outputs:
+          - {variable: text, value_selector: [render_report, output]}
+          - {variable: supplement_requests, value_selector: [call_agent, body, supplement_requests]}   # 下游推送申请人
+
+      - id: end_escalate_human
+        type: end
+        title: 已转人工复核
+        outputs:
+          - {variable: text, value_selector: [render_report, output]}
+          - {variable: ticket_id, value_selector: [call_agent, body, human_approval_ticket_id]}   # 服务端已建单，勿重复建单
+          - {variable: max_risk_level, value_selector: [call_agent, body, max_risk_level]}
+
+      - id: end_reject
+        type: end
+        title: 预审驳回
+        outputs:
+          - {variable: text, value_selector: [render_report, output]}
+          - {variable: route, value_selector: [call_agent, body, route]}
+
+    edges:
+      - {source: start, target: call_agent}
+      - {source: call_agent, target: http_error_branch}
+      - {source: http_error_branch, sourceHandle: tool_error, target: answer_error}
+      - {source: http_error_branch, sourceHandle: "false", target: render_report}
+      - {source: render_report, target: route_branch}
+      - {source: route_branch, sourceHandle: auto_approve, target: end_auto_approve}
+      - {source: route_branch, sourceHandle: needs_supplement, target: end_needs_supplement}
+      - {source: route_branch, sourceHandle: escalate_human, target: end_escalate_human}
+      - {source: route_branch, sourceHandle: "false", target: end_reject}
+
+# -----------------------------------------------------------------------------
+# 批量预审（可选，平台定时触发器）：每日 18:00 由费控系统按当日新提交单据逐张触发本 workflow，
+#   触发身份必须是值班财务专员的真实账号（经网关注入），**不得**使用 finance_manager 服务账号代跑
+#   （否则受限制度条款——薪酬账户 / 合同底价——会进入检索上下文，破坏 ACL 前置过滤的最小权限语义）。
+# -----------------------------------------------------------------------------
