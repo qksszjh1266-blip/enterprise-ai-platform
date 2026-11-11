@@ -15,6 +15,7 @@ dependencies = [
     "elasticsearch>=8.13",
     "sqlglot>=30.30.0",
     "uvicorn>=0.30",
+    "mcp>=2.3.0",
 ]
 
 [dependency-groups]
@@ -28,7 +29,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["data_platform", "eval_platform", "agent_matrix", "web_console"]
+packages = ["data_platform", "eval_platform", "agent_matrix", "web_console", "mcp_server"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
