@@ -1,4 +1,4 @@
-"""门店 SOP 智能体异步端口（Ports & Adapters）。
+"""电商运营 SOP 智能体异步端口（Ports & Adapters）。
 
 - 单元测试注入离线确定性替身（FakeChatModel 按脚本返回结构化结果）；生产注入真实大模型 / Redis / 工单系统适配器。
 - 知识检索不在此重复定义：直接复用 eval_platform.ports.RetrievalSystemPort
@@ -95,7 +95,7 @@ class SessionStorePort(Protocol):
 
 @runtime_checkable
 class TicketEscalationPort(Protocol):
-    """门店设备故障转人工督导 / 报修工单端口（生产：内部工单系统 / 企业 IM 机器人）。"""
+    """店铺设备故障转人工运维 / 报修工单端口（生产：内部工单系统 / 企业 IM 机器人）。"""
 
     async def submit(self, draft: RepairTicketDraft) -> TicketReceipt:
         """提交工单，按 draft.idempotency_key 幂等。

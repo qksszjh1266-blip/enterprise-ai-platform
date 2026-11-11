@@ -1,6 +1,6 @@
 {
-  "baseline_run_id": "catering-baseline",
-  "candidate_run_id": "catering-candidate",
+  "baseline_run_id": "ecommerce-baseline",
+  "candidate_run_id": "ecommerce-candidate",
   "baseline_version": "hybrid-rrf-no-rerank",
   "candidate_version": "hybrid-rrf-rerank",
   "suite_comparable": true,
@@ -27,10 +27,10 @@
     },
     {
       "metric": "mean_mrr",
-      "baseline": 0.7222222222222222,
-      "candidate": 0.9583333333333334,
-      "abs_delta": 0.23611111111111116,
-      "rel_delta_pct": 32.6923076923077,
+      "baseline": 0.7976190476190476,
+      "candidate": 0.9464285714285714,
+      "abs_delta": 0.14880952380952384,
+      "rel_delta_pct": 18.656716417910452,
       "higher_is_better": true,
       "tolerance": 0.03,
       "regressed": false
@@ -67,22 +67,22 @@
     },
     {
       "metric": "latency_p50_ms",
-      "baseline": 11.166612000124587,
-      "candidate": 11.944285000936361,
-      "abs_delta": 0.7776730008117738,
-      "rel_delta_pct": 6.964269921826757,
+      "baseline": 12.53049749902857,
+      "candidate": 11.663025499728974,
+      "abs_delta": -0.8674719992995961,
+      "rel_delta_pct": -6.922885538797219,
       "higher_is_better": false,
       "tolerance": null,
       "regressed": false
     },
     {
       "metric": "latency_p95_ms",
-      "baseline": 14.067270849318446,
-      "candidate": 14.637814049001461,
-      "abs_delta": 0.5705431996830157,
-      "rel_delta_pct": 4.055820107499091,
+      "baseline": 15.307311399737955,
+      "candidate": 15.44504975008749,
+      "abs_delta": 0.13773835034953485,
+      "rel_delta_pct": 0.8998206592432214,
       "higher_is_better": false,
-      "tolerance": 140.67270849318444,
+      "tolerance": 153.07311399737955,
       "regressed": false
     },
     {

@@ -1,4 +1,4 @@
-"""门店 SOP 督导智能体。
+"""电商运营 SOP智能体。
 
 StoreSopAgent 结构化满足 eval_platform.ports.AgentSystemPort（`async def invoke(AgentInvocation) -> AgentResponse`），
 可零适配接入 EvalRunner 跑 END_TO_END 回归评测；同时提供多轮对话入口 handle_turn 供 api.py / Dify 使用。
@@ -74,7 +74,7 @@ EVAL_SESSION_PREFIX = "eval:"
 
 
 class StoreSopAgent:
-    """万店级加盟督导与门店 SOP 知识库智能体。"""
+    """电商运营 SOP 问答与智能工单协同智能体。"""
 
     def __init__(
         self,
@@ -449,7 +449,7 @@ class StoreSopAgent:
         return prompts.render_clarification_question(missing_slots=state.pending_slots, slots=state.slots, safety_hazard=safety_hazard)
 
     def _build_retrieval_query(self, state: StoreSessionState, *, message: str, extraction: IntentSlotExtraction) -> str:
-        """优先 extraction.rewritten_query；否则由槽位（设备 + 现象 / 饮品名称）与原问题拼接，截断至 1000 字符。"""
+        """优先 extraction.rewritten_query；否则由槽位（设备 + 现象 / 商品名称）与原问题拼接，截断至 1000 字符。"""
         return (extraction.rewritten_query or " ".join(filter(None,
             [state.slots.equipment_model, state.slots.fault_symptom, state.slots.drink_name, message])))[:1000]
 
@@ -559,7 +559,7 @@ class StoreSopAgent:
         citations: Sequence[SopCitation],
     ) -> RepairTicketDraft:
         """⑥ 由会话槽位与 user_context 构造工单草稿（reporter_user_id / dept_id 只取 state.user_context）。
-        severity：safety_hazard → P1_SAFETY；设备停机影响出品 → P2；其余 P3。
+        severity：safety_hazard → P1_SAFETY；设备停机影响出库 → P2；其余 P3。
         immediate_actions 取自被引用 SOP 的「停机与升级条件」，无引用时为空。"""
         slots = state.slots
         key = f"{state.session_id}:{slots.equipment_id or slots.equipment_model}:{slots.fault_symptom}"
@@ -646,10 +646,10 @@ _NUMBER_UNIT = re.compile(r"(?:[+-]?\d+(?:\.\d+)?|[零一二三四五六七八�
 
 
 def _drink_numbers_grounded(answer, drink_name, contexts, indices):
-    """Bind quantities to the requested drink, even if the answer omits its name.
+    """Bind quantities to the requested SKU, even if the answer omits its name.
 
-    A shared parent table may contain valid quantities for several different drinks.
-    Preserve non-table text for handling/allergen statements, but exclude other recipes.
+    A shared parent table may contain valid quantities for several different SKUs.
+    Preserve non-table text for handling/allergen statements, but exclude other SKU rows.
     """
     if not drink_name:
         return False
@@ -671,7 +671,7 @@ def _numbers_grounded(answer: str, evidence: list[str]) -> bool:
         prefix = answer[max(0, match.start()-16):match.start()]
         ingredient = re.search(r"([\u4e00-\u9fff]{2,})\s*$", prefix)
         rows = [line for text in evidence for line in text.splitlines() if line.startswith("|")]
-        # Restrict values to rows containing the stated drink (if present).
+        # Restrict values to rows containing the stated SKU (if present).
         named_rows = []
         for row in rows:
             name = row.split("|")[1].strip().split()[0] if row.split("|")[1].strip() else ""
@@ -679,7 +679,7 @@ def _numbers_grounded(answer: str, evidence: list[str]) -> bool:
                 named_rows.append(row)
         if named_rows and not any(pattern.search(row) for row in named_rows):
             return False
-        # Catch 45g for lemon even though another drink in the same parent contains 45g.
+        # Catch 45g for protein powder even though another SKU in the same parent contains 45g.
         if ingredient:
             label = ingredient.group(1)
             matching = [row for row in rows if label in row]

@@ -1,4 +1,4 @@
-"""门店 SOP 智能体异常体系。
+"""电商运营 SOP 智能体异常体系。
 
 风格与 data_platform.retrieval_engine.errors 一致：每个异常携带稳定 code、retryable 与 suggestion，
 to_hint() 输出可直接回灌给 LLM / Dify 工作流的结构化修正提示。
@@ -22,7 +22,7 @@ from __future__ import annotations
 
 
 class StoreAgentError(Exception):
-    """门店 SOP 智能体异常基类。"""
+    """电商运营 SOP 智能体异常基类。"""
 
     code: str = "STORE_AGENT_ERROR"
     retryable: bool = False
@@ -63,7 +63,7 @@ class SessionStoreUnavailableError(StoreAgentError):
 class ChatModelUnavailableError(StoreAgentError):
     code = "CHAT_MODEL_UNAVAILABLE"
     retryable = True
-    suggestion = "大模型服务暂不可用，请稍后重试；紧急设备故障请直接联系区域督导。"
+    suggestion = "大模型服务暂不可用，请稍后重试；紧急设备故障请直接联系仓配运维主管。"
 
 
 class StructuredOutputError(StoreAgentError):
@@ -75,7 +75,7 @@ class StructuredOutputError(StoreAgentError):
 class TicketEscalationError(StoreAgentError):
     code = "TICKET_ESCALATION_FAILED"
     retryable = True
-    suggestion = "报修工单提交失败，请稍后重试或电话联系区域督导，并记录设备编号。"
+    suggestion = "报修工单提交失败，请稍后重试或电话联系仓配运维主管，并记录设备编号。"
 
 
 class AgentNotInitializedError(StoreAgentError):

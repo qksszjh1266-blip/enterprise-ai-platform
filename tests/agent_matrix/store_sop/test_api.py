@@ -41,7 +41,7 @@ async def test_gateway_identity_and_sessions(agent,user,monkeypatch):
     monkeypatch.setattr(agent,'handle_turn',spy)
     async with client(agent) as http:
         response=await http.post(API_PREFIX+'/turns',headers=headers(user),json={
-            'message':'制冰机坏了','user_context':{'user_id':'attacker','dept_id':'finance','roles':['finance']}})
+            'message':'热敏打单机坏了','user_context':{'user_id':'attacker','dept_id':'finance','roles':['finance']}})
         assert response.status_code==200,response.text
         assert captured[0].user_context==user
         session=response.json()['session_id']
@@ -73,7 +73,7 @@ async def test_422_uninitialized_and_missing(agent,user):
         error(await http.post(API_PREFIX+'/turns',headers=headers(user),json={'message':'你好'}),503,'AGENT_NOT_INITIALIZED')
     async with client(agent) as http:
         error(await http.post(API_PREFIX+'/turns',headers=headers(user),json={'message':''}),422,'INVALID_ARGUMENT')
-        error(await http.post(API_PREFIX+'/turns',headers=headers(user),json={'message':'不进水','session_id':'missing'}),404,'SESSION_NOT_FOUND')
+        error(await http.post(API_PREFIX+'/turns',headers=headers(user),json={'message':'不出纸','session_id':'missing'}),404,'SESSION_NOT_FOUND')
 
 
 @pytest.mark.parametrize('exc,status,code',[
@@ -94,6 +94,6 @@ async def test_errors_sanitized(agent,user,monkeypatch,exc,status,code):
 async def test_retrieval_unavailable_is_200(agent,user,sop_service):
     sop_service.vector_search.fail=sop_service.keyword_search.fail=RuntimeError('offline')
     async with client(agent) as http:
-        response=await http.post(API_PREFIX+'/turns',headers=headers(user),json={'message':'鲜柠檬茶柠檬片多少克'})
+        response=await http.post(API_PREFIX+'/turns',headers=headers(user),json={'message':'蛋白粉随行杯蛋白粉多少克'})
         assert response.status_code==200
         assert response.json()['stop_reason']=='retrieval_unavailable'

@@ -67,22 +67,22 @@
     },
     {
       "metric": "latency_p50_ms",
-      "baseline": 126.88464199891314,
-      "candidate": 116.52529400089406,
-      "abs_delta": -10.359347998019075,
-      "rel_delta_pct": -8.164382887337784,
+      "baseline": 96.94884599957732,
+      "candidate": 100.97247100020468,
+      "abs_delta": 4.023625000627362,
+      "rel_delta_pct": 4.150255693239407,
       "higher_is_better": false,
       "tolerance": null,
       "regressed": false
     },
     {
       "metric": "latency_p95_ms",
-      "baseline": 166.83512699819403,
-      "candidate": 130.45832220122975,
-      "abs_delta": -36.37680479696428,
-      "rel_delta_pct": -21.804044179112264,
+      "baseline": 142.83823870046035,
+      "candidate": 111.03503269932844,
+      "abs_delta": -31.80320600113191,
+      "rel_delta_pct": -22.265190533345194,
       "higher_is_better": false,
-      "tolerance": 1668.3512699819403,
+      "tolerance": 1428.3823870046035,
       "regressed": false
     },
     {
@@ -152,7 +152,7 @@
     {
       "sample_id": "cross_warehouse",
       "scenario": "supply_chain",
-      "question": "WH_S01 糖浆库存",
+      "question": "WH_S01 风味液库存",
       "failure_category": "acl_leak",
       "baseline_category": "none",
       "newly_failed": true,

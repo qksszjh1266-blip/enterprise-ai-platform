@@ -4,7 +4,7 @@
 
 - RetrievalSystemPort：数据中台 的 HybridRetrievalService 原样满足（search 签名完全一致），
   无需任何适配层。
-- AgentSystemPort：门店、供应链与财务模块 的业务智能体 / Workflow 通过薄适配器接入端到端评测。
+- AgentSystemPort：店铺、供应链与财务模块 的业务智能体 / Workflow 通过薄适配器接入端到端评测。
 - LLMJudgePort：裁判模型。三个维度拆分为独立方法，便于 EvalRunner 用 asyncio.gather 并发调用，
   并允许不同维度使用不同 prompt / 模型。
 
@@ -47,7 +47,7 @@ class RetrievalSystemPort(Protocol):
 
 @runtime_checkable
 class AgentSystemPort(Protocol):
-    """业务智能体端口（被测对象：门店、供应链与财务模块 门店 SOP / 供应链 / 财务预审智能体及 Workflow）。"""
+    """业务智能体端口（被测对象：店铺、供应链与财务模块 电商运营 SOP / 供应链 / 财务预审智能体及 Workflow）。"""
 
     async def invoke(self, invocation: AgentInvocation) -> AgentResponse:
         """以 invocation.user_context 身份执行一次端到端问答。
@@ -98,6 +98,6 @@ class LLMJudgePort(Protocol):
         scenario: EvalScenario,
         user_context: UserContext,
     ) -> JudgeScore:
-        """模拟用户满意度（1~5 Likert）：以该场景下 user_context.roles 所示岗位（如店员、店长、财务）
+        """模拟用户满意度（1~5 Likert）：以该场景下 user_context.roles 所示岗位（如运营专员、运营主管、财务）
         的视角，评价回答的可执行性、简洁度与语气。"""
         ...

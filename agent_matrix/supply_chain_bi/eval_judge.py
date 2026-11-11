@@ -2,7 +2,7 @@
 
 为什么不能复用 eval_platform.offline.RuleBasedJudge：
 - 其忠实度按"回答逐句是否为上下文子串"计算；BI 结论是对结果表的格式化归纳（0.0523 → 5.2%、
-  "柠檬损耗最高"），几乎没有一句是 BI_RESULT_V1 原文子串 → faithfulness≈0，门禁 min_faithfulness 必然误阻断；
+  "益生菌粉损耗最高"），几乎没有一句是 BI_RESULT_V1 原文子串 → faithfulness≈0，门禁 min_faithfulness 必然误阻断；
 - 其满意度量表依赖"检查 / 审批 / 记录"等 SOP 动词，与数据分析的可执行性无关。
 
 DataAnalysisJudge（离线、确定性、零 token；生产 LLM 裁判适配器可按相同端口另行实现）：

@@ -19,7 +19,7 @@ from tests.mcp_adapter.conftest import STORE_CLERK, STORE_MANAGER, StubRetrieval
 
 async def test_search_narrows_user_context_to_single_requested_role():
     stub = StubRetrieval(results=[make_chunk()])
-    await search_enterprise_knowledge(stub, STORE_MANAGER, query="制冰机", department="store_ops", role="clerk")
+    await search_enterprise_knowledge(stub, STORE_MANAGER, query="热敏打单机", department="store_ops", role="clerk")
     (request,) = stub.requests
     assert request.user_context.dept_id == "store_ops"
     assert request.user_context.roles == ["clerk"]
@@ -35,12 +35,12 @@ async def test_out_of_scope_department_or_role_is_denied_before_retrieval(depart
 
 
 async def test_evidence_is_compact_and_carries_section_and_source():
-    stub = StubRetrieval(results=[make_chunk("sop_a", section="设备/制冰机", page=2, score=0.91234567),
-                                  make_chunk("sop_b", section="饮品", page=None)])
+    stub = StubRetrieval(results=[make_chunk("sop_a", section="设备/热敏打单机", page=2, score=0.91234567),
+                                  make_chunk("sop_b", section="商品", page=None)])
     result = await search_enterprise_knowledge(stub, STORE_CLERK, query="q", department="store_ops", role="clerk")
     assert result.total == 2
     first, second = result.evidence
-    assert (first.rank, first.section_path, first.source.doc_id, first.source.page_number) == (1, "设备/制冰机", "sop_a", 2)
+    assert (first.rank, first.section_path, first.source.doc_id, first.source.page_number) == (1, "设备/热敏打单机", "sop_a", 2)
     assert first.score == 0.912346
     assert second.rank == 2 and second.source.page_number is None
     dumped = result.model_dump()

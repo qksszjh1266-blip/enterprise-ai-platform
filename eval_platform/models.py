@@ -3,7 +3,7 @@
 本模块仅包含 Pydantic V2 模型与枚举，不含任何 I/O：
 
 样本与配置
-- EvalScenario          业务场景枚举（门店 SOP / 供应链 / 财务审批）
+- EvalScenario          业务场景枚举（电商运营 SOP / 供应链 / 财务审批）
 - EvalMode              评测模式（仅检索 / 端到端）
 - EvalSample            黄金测试集单条样本
 - EvalRunConfig         EvalRunner 运行参数（并发、超时、归因阈值）
@@ -54,7 +54,7 @@ from data_platform.retrieval_engine.models import (
 class EvalScenario(str, enum.Enum):
     """业务场景（与 agent_matrix 三大智能体一一对应）。"""
 
-    STORE_SOP = "store_sop"  # 门店 SOP 问答
+    STORE_SOP = "store_sop"  # 电商运营 SOP 问答
     SUPPLY_CHAIN = "supply_chain"  # 供应链数据分析
     FINANCE_APPROVAL = "finance_approval"  # 财务合同 / 报销预审
 
@@ -65,7 +65,7 @@ class EvalScenario(str, enum.Enum):
 
 
 _SCENARIO_LABELS: dict[EvalScenario, str] = {
-    EvalScenario.STORE_SOP: "门店SOP",
+    EvalScenario.STORE_SOP: "电商运营SOP",
     EvalScenario.SUPPLY_CHAIN: "供应链",
     EvalScenario.FINANCE_APPROVAL: "财务审批",
 }

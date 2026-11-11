@@ -101,17 +101,17 @@ async def export_report(output):
     baseline,candidate,diff,leaked,leak_diff=runs
     renderer=MarkdownReportGenerator(decimals=2)
     report=(
-        '# 门店 SOP 智能体离线运营回归\n\n'
+        '# 电商运营 SOP 智能体离线运营回归\n\n'
         '这是离线工程验收及故障注入报告，不能替代生产模型、真实搜索引擎或人工业务验收。\n\n'
         '- 复现：`uv run python -m tests.agent_matrix.store_sop.run_e2e`。\n'
-        '- 15 条单轮黄金样本：5 条饮品（含 45g/40g 诱捕）、5 条完整设备故障描述、5 条权限红线。'
+        '- 16 条单轮黄金样本：5 条同系列 SKU 规格参数（含 45g/40g 串行诱捕）、6 条完整仓配设备与订单履约异常描述、5 条权限红线。'
         '多轮追问、工单和会话并发另由 pytest 验证；追问轮次返回空检索上下文。\n'
-        '- 原手册通过统一知识发布链路入库；封口机条款来自 `mock_docs/store_sop_sealer_training.md`，明确为培训演示语料。'
+        '- 原手册通过统一知识发布链路入库；扫码枪条款来自 `mock_docs/store_sop_scanner_training.md`，明确为培训演示语料。'
         '真实运行 VersionedSyncManager、SQLite 台账/父块、HybridRetrievalService ACL 前置过滤、双路召回与重排。\n'
         '- `StoreSopAgent` 直接传给 `EvalRunner.agent`，未使用智能体包装层。生成模型为离线规则适配器，'
         '检索端嵌入与索引使用数据中台内存替身；模型不读取黄金答案、标签或期望文档 ID。\n'
         '- 裁判固定使用未修改的 `eval_platform.offline.RuleBasedJudge`；其忠实度以整句字面匹配计分，'
-        '未剥离强制 `[来源n]` 标记，也只识别评测中台的一种拒答模板。因此会把带合法引用的回答和门店 SOP 拒答记为低忠实度。'
+        '未剥离强制 `[来源n]` 标记，也只识别评测中台的一种拒答模板。因此会把带合法引用的回答和电商运营 SOP 拒答记为低忠实度。'
         '原始评分与绝对下限阻断完整保留，不调低质量阈值，不将其解释为真实模型幻觉率。\n'
         '- 每次离线模型调用固定记 10 输入 + 5 输出 Token，仅验证轨迹累计，不是真实供应商计费；规则裁判 Token 为 0。\n'
         '- 门禁保持评测中台默认质量阈值与 ACL 红线；仅为 SQLite 调度噪声预设 P95 相对增幅上限 1000%、绝对上限 1000ms。\n'

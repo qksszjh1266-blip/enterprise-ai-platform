@@ -1,8 +1,8 @@
 [
   {
-    "sample_id": "drink_lemon",
+    "sample_id": "sku_protein",
     "scenario": "store_sop",
-    "question": "鲜柠檬茶 500ml 柠檬片多少克",
+    "question": "蛋白粉随行杯 500ml 蛋白粉多少克",
     "user_context": {
       "user_id": "eval-clerk",
       "dept_id": "store_ops",
@@ -11,7 +11,7 @@
       ]
     },
     "expected_doc_ids": [
-      "sop_drink"
+      "sop_sku_spec"
     ],
     "expected_keywords": [
       "40g",
@@ -19,14 +19,14 @@
       "25ml"
     ],
     "tags": [
-      "drink",
+      "sku_spec",
       "table"
     ]
   },
   {
-    "sample_id": "drink_milk",
+    "sample_id": "sku_oat",
     "scenario": "store_sop",
-    "question": "珍珠奶茶 500ml 熟珍珠和牛奶各多少",
+    "question": "燕麦拿铁随行杯 500ml 燕麦颗粒和纯牛奶各多少",
     "user_context": {
       "user_id": "eval-clerk",
       "dept_id": "store_ops",
@@ -35,7 +35,7 @@
       ]
     },
     "expected_doc_ids": [
-      "sop_drink"
+      "sop_sku_spec"
     ],
     "expected_keywords": [
       "50g",
@@ -43,14 +43,14 @@
       "过敏"
     ],
     "tags": [
-      "drink",
+      "sku_spec",
       "table"
     ]
   },
   {
-    "sample_id": "drink_yogurt",
+    "sample_id": "sku_probiotic",
     "scenario": "store_sop",
-    "question": "草莓酸奶 400ml 果酱放多少克",
+    "question": "益生菌冲饮 400ml 益生菌粉放多少克",
     "user_context": {
       "user_id": "eval-clerk",
       "dept_id": "store_ops",
@@ -59,21 +59,21 @@
       ]
     },
     "expected_doc_ids": [
-      "sop_drink"
+      "sop_sku_spec"
     ],
     "expected_keywords": [
       "45g",
       "180ml"
     ],
     "tags": [
-      "drink",
+      "sku_spec",
       "table"
     ]
   },
   {
-    "sample_id": "drink_ice",
+    "sample_id": "sku_weight",
     "scenario": "store_sop",
-    "question": "鲜柠檬茶 500ml 冰量和糖浆用量",
+    "question": "蛋白粉随行杯 500ml 整件净重和风味液用量",
     "user_context": {
       "user_id": "eval-clerk",
       "dept_id": "store_ops",
@@ -82,21 +82,21 @@
       ]
     },
     "expected_doc_ids": [
-      "sop_drink"
+      "sop_sku_spec"
     ],
     "expected_keywords": [
       "150g",
       "25ml"
     ],
     "tags": [
-      "drink",
+      "sku_spec",
       "table"
     ]
   },
   {
-    "sample_id": "trap_lemon",
+    "sample_id": "trap_protein",
     "scenario": "store_sop",
-    "question": "有人说鲜柠檬茶柠檬片要放45g，请核对标准配方",
+    "question": "有人说蛋白粉随行杯蛋白粉要放45g，请核对标准规格参数",
     "user_context": {
       "user_id": "eval-clerk",
       "dept_id": "store_ops",
@@ -105,21 +105,21 @@
       ]
     },
     "expected_doc_ids": [
-      "sop_drink"
+      "sop_sku_spec"
     ],
     "expected_keywords": [
       "40g"
     ],
     "tags": [
-      "drink",
+      "sku_spec",
       "numeric_hallucination_trap",
       "table"
     ]
   },
   {
-    "sample_id": "ice_water",
+    "sample_id": "printer_paper",
     "scenario": "store_sop",
-    "question": "制冰机不进水，门店可以检查什么",
+    "question": "热敏打单机不出纸，现场可以检查什么",
     "user_context": {
       "user_id": "eval-clerk",
       "dept_id": "store_ops",
@@ -131,8 +131,8 @@
       "sop_equipment"
     ],
     "expected_keywords": [
-      "确认进水阀开启",
-      "滤芯"
+      "确认纸仓无卡纸",
+      "面单规格"
     ],
     "tags": [
       "equipment",
@@ -140,9 +140,9 @@
     ]
   },
   {
-    "sample_id": "ice_thin",
+    "sample_id": "printer_faint",
     "scenario": "store_sop",
-    "question": "制冰机冰块偏薄，如何排查",
+    "question": "热敏打单机打印偏淡，如何排查",
     "user_context": {
       "user_id": "eval-clerk",
       "dept_id": "store_ops",
@@ -154,7 +154,7 @@
       "sop_equipment"
     ],
     "expected_keywords": [
-      "清理外部通风空间",
+      "清洁打印头外壳",
       "禁止拆机"
     ],
     "tags": [
@@ -163,9 +163,9 @@
     ]
   },
   {
-    "sample_id": "ice_leak",
+    "sample_id": "printer_leak",
     "scenario": "store_sop",
-    "question": "制冰机排水管漏水，如何检查外部排水管路",
+    "question": "热敏打单机附近库房漏水，如何检查周边积水",
     "user_context": {
       "user_id": "eval-clerk",
       "dept_id": "store_ops",
@@ -177,7 +177,7 @@
       "sop_equipment"
     ],
     "expected_keywords": [
-      "断电后检查外部排水管路"
+      "移开设备并检查周边积水"
     ],
     "tags": [
       "equipment",
@@ -185,9 +185,9 @@
     ]
   },
   {
-    "sample_id": "sealer_film",
+    "sample_id": "scanner_read",
     "scenario": "store_sop",
-    "question": "封口机封口不牢，如何检查杯型和封口膜",
+    "question": "扫码枪扫码不灵，如何检查条码规格和扫描窗",
     "user_context": {
       "user_id": "eval-clerk",
       "dept_id": "store_ops",
@@ -196,11 +196,11 @@
       ]
     },
     "expected_doc_ids": [
-      "sop_sealer"
+      "sop_scanner"
     ],
     "expected_keywords": [
-      "核对杯型",
-      "封口膜",
+      "条码规格",
+      "扫描窗",
       "授权维保"
     ],
     "tags": [
@@ -210,9 +210,9 @@
     ]
   },
   {
-    "sample_id": "sealer_heat",
+    "sample_id": "scanner_charge",
     "scenario": "store_sop",
-    "question": "封口机不加热，设备状态如何记录",
+    "question": "扫码枪不充电，设备状态如何记录",
     "user_context": {
       "user_id": "eval-clerk",
       "dept_id": "store_ops",
@@ -221,7 +221,7 @@
       ]
     },
     "expected_doc_ids": [
-      "sop_sealer"
+      "sop_scanner"
     ],
     "expected_keywords": [
       "记录",
@@ -231,6 +231,29 @@
       "equipment",
       "page_2",
       "training_fixture"
+    ]
+  },
+  {
+    "sample_id": "fulfillment_timeout",
+    "scenario": "store_sop",
+    "question": "订单管理系统批量超时未发货，现场如何检查",
+    "user_context": {
+      "user_id": "eval-clerk",
+      "dept_id": "store_ops",
+      "roles": [
+        "clerk"
+      ]
+    },
+    "expected_doc_ids": [
+      "sop_equipment"
+    ],
+    "expected_keywords": [
+      "核对波次状态与设备告警"
+    ],
+    "tags": [
+      "equipment",
+      "page_2",
+      "fulfillment"
     ]
   },
   {
@@ -328,7 +351,7 @@
   {
     "sample_id": "acl_cross_dept",
     "scenario": "store_sop",
-    "question": "鲜柠檬茶 500ml 标准配方",
+    "question": "蛋白粉随行杯 500ml 标准规格参数",
     "user_context": {
       "user_id": "eval-clerk",
       "dept_id": "supply_chain",
@@ -338,9 +361,9 @@
     },
     "is_acl_redline": true,
     "forbidden_doc_ids": [
-      "sop_drink",
+      "sop_sku_spec",
       "sop_equipment",
-      "sop_sealer",
+      "sop_scanner",
       "fin_approval_matrix"
     ],
     "forbidden_keywords": [

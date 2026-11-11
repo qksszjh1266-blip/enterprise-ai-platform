@@ -1,4 +1,4 @@
-"""门店 SOP 智能体 FastAPI 对话路由。
+"""电商运营 SOP 智能体 FastAPI 对话路由。
 
     POST   /api/v1/agents/store-sop/turns                 -> StoreSopAgent.handle_turn
     GET    /api/v1/agents/store-sop/sessions/{session_id} -> 读取本人会话状态（调试 / 工作流回显）
@@ -106,7 +106,7 @@ def get_trusted_user_context(request: Request, body_user_context: UserContext | 
 @router.post(
     "/turns",
     operation_id="store_sop_chat_turn",
-    summary="门店 SOP 督导助手单轮对话",
+    summary="电商运营 SOP 助手单轮对话",
     description=(
         "多轮对话：首轮不传 session_id，后续轮次回传上一轮响应中的 session_id。"
         "needs_clarification=true 时 answer 为追问问题；escalation_ticket 非空表示已转人工报修；"
@@ -201,7 +201,7 @@ def create_app(agent: StoreSopAgent | None = None, *, allow_body_identity: bool 
     app = FastAPI(
         title="Store SOP Agent API",
         version="0.3.0",
-        description="门店 SOP 督导助手：饮品制作 / 设备排障多轮问答，强制溯源引用，排障失败转人工报修。",
+        description="电商运营 SOP 助手：商品规格参数 / 设备排障多轮问答，强制溯源引用，排障失败转人工报修。",
     )
     app.state.store_sop_agent = agent
     app.state.allow_body_identity = allow_body_identity

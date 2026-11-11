@@ -193,7 +193,7 @@ def create_console_app(*, env_file: Path | None = None, llm_transport: httpx.Asy
         finally:
             await runtime.aclose()
 
-    app = FastAPI(title="连锁餐饮企业 AI 平台统一管控与演练工作台", version="0.1.0", lifespan=lifespan, docs_url=None, redoc_url=None)
+    app = FastAPI(title="综合电商企业 AI 平台统一管控与演练工作台", version="0.1.0", lifespan=lifespan, docs_url=None, redoc_url=None)
     app.add_middleware(TrustedGatewayMiddleware)
     app.mount("/gateway/knowledge", knowledge_app)
     app.mount("/gateway/store-sop", store_app)

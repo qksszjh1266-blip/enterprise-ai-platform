@@ -34,7 +34,7 @@ Decimal 精度铁律
 
 审批层级判定（resolve_approver_tier）
 - 报销：approval_amount = max(declared_total, 拆单窗口合计)；按 approval_bands 左开右闭定档；
-  定档为 STORE_MANAGER 且申请人 roles 含 "store_manager" → 升级为 REGIONAL_MANAGER（制度：店长本人申请转区域经理）。
+  定档为 STORE_MANAGER 且申请人 roles 含 "store_manager" → 升级为 REGIONAL_MANAGER（制度：运营主管本人申请转区域经理）。
 - 合同：subject_amount（或拆分窗口合计）> contract_legal_review_threshold → LEGAL_AND_FINANCE_HEAD，
   否则按 approval_bands 定档。
 
@@ -410,7 +410,7 @@ class DeterministicFinanceRuleEngine:
     ) -> SplitClaimEvidence | None:
         """FIN-R08 拆单规避审批检测。
 
-        候选集合 = 本单 + ledger.recent_claims 中 status ∈ ACTIVE_INVOICE_USAGE_STATUSES、同申请人、同门店、
+        候选集合 = 本单 + ledger.recent_claims 中 status ∈ ACTIVE_INVOICE_USAGE_STATUSES、同申请人、同店铺、
         类别与本单任一明细类别相同的单据（窗口 [submitted_at − split_window_days, submitted_at]）。
         对每个审批档上限 U（approval_bands 中非 None 的 upper_inclusive）：
             若候选集合中每张单据金额均 <= U 且 合计 > U 且 候选数 >= 2 → 命中，bypassed_threshold = U；

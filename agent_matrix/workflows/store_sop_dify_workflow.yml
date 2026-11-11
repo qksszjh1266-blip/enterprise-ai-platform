@@ -1,5 +1,5 @@
 # =============================================================================
-# 门店 SOP 督导助手 —— Dify / HiAgent Workflow 编排结构说明
+# 电商运营 SOP 助手 —— Dify / HiAgent Workflow 编排结构说明
 #
 # 定位：这是编排**结构说明**，字段布局对齐 Dify DSL（advanced-chat）便于对照搭建；
 #       并非可直接导入的最终 DSL（节点 id、模型凭据、工具 provider_id 需在目标平台生成）。
@@ -24,7 +24,7 @@
 # 已实现的冻结语义（原生编排复刻时同样必须满足）：
 #   - 模型调用只有意图槽位、白名单动作决策、引用生成、摘要压缩四处；其余话术均为确定性模板。
 #   - 安全隐患且槽位齐备时直接报修，不进入 search_kb 或 grounded_llm；信息缺失时先安全提示再追问。
-#   - 饮品数值与单位逐字核验，并绑定请求饮品所在表格行，防止同一父块其他配方的 45g 冒充柠檬片 40g。
+#   - 商品数值与单位逐字核验，并绑定请求商品所在表格行，防止同一父块其他规格参数的 45g 冒充蛋白粉 40g。
 #   - 追问、拒答、检索不可用及步数兜底的评测 retrieved_contexts 均为空；跨部门拒答不携带引用或存在性信息。
 #   - 单轮设备排障评测样本必须包含设备和完整故障描述；多轮补槽位由独立会话测试验收。
 # =============================================================================
@@ -33,9 +33,9 @@ kind: app
 version: "0.1.5"
 app:
   mode: advanced-chat
-  name: 门店SOP督导助手
-  description: 饮品制作 / 设备排障多轮问答；强制溯源引用；排障失败转人工报修
-  icon: "bubble_tea"
+  name: 电商运营 SOP 问答与智能工单协同助手
+  description: 同系列商品规格参数与售后规则查询 / 仓配设备与订单履约异常多轮排障；强制溯源引用；排障失败或高危异常转人工派单
+  icon: "package"
   use_icon_as_answer_icon: false
 
 dependencies:
@@ -70,13 +70,14 @@ workflow:
     - {name: STORE_SOP_AGENT_BASE_URL, value_type: string, value: "http://store-sop-agent.internal"}
     - {name: RETRIEVAL_TOP_K, value_type: number, value: 5}
     - {name: MAX_CLARIFICATION_ROUNDS, value_type: number, value: 2}
-    - {name: PROMPT_VERSION, value_type: string, value: "store_sop.v1", description: "须与 agent_matrix/store_sop/prompts.py 一致"}
+    - {name: PROMPT_VERSION, value_type: string, value: "store_sop.v2", description: "须与 agent_matrix/store_sop/prompts.py 一致"}
 
   features:
-    opening_statement: 您好，我是门店 SOP 督导助手，可以解答饮品制作标准、设备巡检与故障排查等问题。
+    opening_statement: 您好，我是电商运营 SOP 助手，可以解答同系列商品规格参数、多平台售后退换赔付规则、仓配打单 / 扫码设备与订单履约异常排障等问题。
     suggested_questions:
-      - 鲜柠檬茶 500ml 柠檬片放多少克？
-      - 制冰机不进水怎么处理？
+      - 蛋白粉随行杯 500ml 蛋白粉放多少克？
+      - 热敏打单机不出纸怎么处理？
+      - 漏发错发的单笔赔付上限是多少？
     file_upload: {enabled: false}
     retriever_resource: {enabled: true}        # 前端展示 citations
 
@@ -92,7 +93,7 @@ workflow:
           variables: []                        # 使用 sys.query / sys.user_id；身份由平台网关注入
         - id: call_agent
           type: http-request
-          title: 调用门店 SOP 智能体
+          title: 调用电商运营 SOP 智能体
           method: POST
           url: "{{#env.STORE_SOP_AGENT_BASE_URL#}}/api/v1/agents/store-sop/turns"
           # X-Dept-Id / X-User-Roles：HiAgent / 自研网关透传；Dify 需在反向代理层注入（不得由 LLM 节点生成）

@@ -1,4 +1,4 @@
-"""财务费用报销与加盟采购合同合规预审智能体数据模型与传输契约。
+"""财务费用报销与商品采购合同合规预审智能体数据模型与传输契约。
 
 本模块仅包含 Pydantic V2 模型、枚举、类型别名与策略常量，不含任何 I/O：
 
@@ -52,7 +52,7 @@
    （模型最多把单据升级为 ESCALATE_HUMAN）。
 3. **红线一票否决**：任一 is_redline finding 或 HIGH / CRITICAL finding ⇒ 路由 ∈ {ESCALATE_HUMAN, REJECT}；
    FinanceAuditResponse 校验器保证这一点无法被构造绕过。
-4. **申请人 ≠ 调用人**：ApplicantProfile 是单据业务事实（用于自审冲突、店长本人申请升级审批人等规则），
+4. **申请人 ≠ 调用人**：ApplicantProfile 是单据业务事实（用于自审冲突、运营主管本人申请升级审批人等规则），
    绝不参与 ACL；ACL 身份只来自 UserContext（网关头 / AgentInvocation）。
 5. **原始 PII 只存在于 *Submission 输入模型**：Redacted*View、模型端口参数、AuditTrailSummary、
    FinanceAuditResponse、HumanApprovalTicketDraft、日志中不得出现银行卡号 / 身份证号 / 手机号原文。
@@ -132,8 +132,8 @@ _REF_PATTERN = r"^[A-Za-z0-9_.:-]+$"
 class AuditSubjectType(str, enum.Enum):
     """预审对象类型（与 AuditSubmission 判别字段 subject_type 取值一致）。"""
 
-    EXPENSE = "expense"  # 门店费用报销单
-    CONTRACT = "contract"  # 加盟 / 采购类合同
+    EXPENSE = "expense"  # 部门费用报销单
+    CONTRACT = "contract"  # 商品采购 / 仓储物流类合同
 
 
 class ExpenseCategory(str, enum.Enum):
@@ -169,9 +169,9 @@ class AttachmentType(str, enum.Enum):
 
 
 class ContractType(str, enum.Enum):
-    FRANCHISE_PROCUREMENT = "franchise_procurement"  # 加盟商物料 / 设备采购
+    FRANCHISE_PROCUREMENT = "franchise_procurement"  # 外部供应商商品 / 设备采购
     EQUIPMENT_PURCHASE = "equipment_purchase"  # 集团设备采购
-    STORE_LEASE = "store_lease"  # 门店租赁
+    STORE_LEASE = "store_lease"  # 仓库租赁
     RENOVATION_SERVICE = "renovation_service"  # 装修工程服务
     LOGISTICS_SERVICE = "logistics_service"  # 物流配送服务
     OTHER = "other"
@@ -227,8 +227,8 @@ _ROUTE_RANK: dict[ApprovalRoute, int] = {
 class ApproverTier(str, enum.Enum):
     """常规审批层级（来自《财务费用报销制度 > 费用审批矩阵》与合同金额门槛）。"""
 
-    STORE_MANAGER = "store_manager"  # 店长
-    REGIONAL_MANAGER = "regional_manager"  # 区域经理（店长本人申请时由店长升级至此）
+    STORE_MANAGER = "store_manager"  # 运营主管
+    REGIONAL_MANAGER = "regional_manager"  # 区域经理（运营主管本人申请时由运营主管升级至此）
     REGIONAL_MANAGER_AND_FINANCE = "regional_manager_and_finance"  # 区域经理及财务
     REGIONAL_HEAD_AND_FINANCE_HEAD = "regional_head_and_finance_head"  # 区域负责人及财务负责人
     LEGAL_AND_FINANCE_HEAD = "legal_and_finance_head"  # 合同：法务 + 财务负责人
@@ -486,7 +486,7 @@ class ExpenseLineItem(BaseModel):
 
 
 class ExpenseAuditSubmission(BaseModel):
-    """门店费用报销预审输入。
+    """运营费用报销预审输入。
 
     原始 PII 可能出现在 reason / lines[*].description（自由文本）与 payee_bank_account（结构化）；
     后者永不进入 RedactedExpenseView（仅保留 has_payee_bank_account）。
@@ -531,7 +531,7 @@ class CounterpartyInfo(BaseModel):
 
     name: str = Field(..., min_length=1, max_length=200)
     unified_credit_code: str = Field(..., pattern=r"^[0-9A-Z]{18}$", description="统一社会信用代码")
-    is_franchisee: bool = Field(default=False, description="相对方是否为本集团加盟商")
+    is_franchisee: bool = Field(default=False, description="相对方是否为本集团战略合作商")
     contact_phone: str | None = Field(default=None, max_length=32)
     bank_account: str | None = Field(default=None, max_length=32)
 
@@ -548,7 +548,7 @@ class PaymentInstallment(BaseModel):
 
 
 class ContractAuditSubmission(BaseModel):
-    """加盟 / 采购合同预审输入。"""
+    """商品采购 / 仓储物流合同预审输入。"""
 
     model_config = ConfigDict(frozen=True, extra="forbid", str_strip_whitespace=True)
 
@@ -796,7 +796,7 @@ DEFAULT_APPROVAL_BANDS: tuple[ApprovalBand, ...] = (
     ),
     ApprovalBand(lower_exclusive=Decimal("3000"), approver_tier=ApproverTier.REGIONAL_HEAD_AND_FINANCE_HEAD),
 )
-"""《费用审批矩阵》：≤500 店长；500~3000 区域经理及财务；>3000 区域负责人及财务负责人。
+"""《费用审批矩阵》：≤500 运营主管；500~3000 区域经理及财务；>3000 区域负责人及财务负责人。
 
 制度原文"501 至 3000 元"按左开右闭区间 (500, 3000] 解释，消除 500.01~500.99 的空档。
 """

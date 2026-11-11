@@ -11,12 +11,12 @@
           "store_clerk"
         ]
       },
-      "reason": "门店经营采购耗材",
+      "reason": "仓库打包耗材采购",
       "lines": [
         {
           "line_no": 1,
           "category": "daily_consumables",
-          "description": "门店经营采购耗材",
+          "description": "仓库打包耗材采购",
           "invoice_no": "INVE0100001",
           "occurred_on": "2026-10-30",
           "quantity": "1",
@@ -30,7 +30,7 @@
         {
           "line_no": 2,
           "category": "daily_consumables",
-          "description": "门店经营采购耗材",
+          "description": "仓库打包耗材采购",
           "invoice_no": "INVE0100001",
           "occurred_on": "2026-10-30",
           "quantity": "1",
@@ -73,12 +73,12 @@
           "store_manager"
         ]
       },
-      "reason": "门店经营采购耗材",
+      "reason": "仓库打包耗材采购",
       "lines": [
         {
           "line_no": 1,
           "category": "daily_consumables",
-          "description": "门店经营采购耗材",
+          "description": "仓库打包耗材采购",
           "invoice_no": "INVE0200001",
           "occurred_on": "2026-10-30",
           "quantity": "1",
@@ -92,7 +92,7 @@
         {
           "line_no": 2,
           "category": "daily_consumables",
-          "description": "门店经营采购耗材",
+          "description": "仓库打包耗材采购",
           "invoice_no": "INVE0200001",
           "occurred_on": "2026-10-30",
           "quantity": "1",
@@ -135,12 +135,12 @@
           "store_clerk"
         ]
       },
-      "reason": "门店经营采购耗材",
+      "reason": "仓库打包耗材采购",
       "lines": [
         {
           "line_no": 1,
           "category": "daily_consumables",
-          "description": "门店经营采购耗材",
+          "description": "仓库打包耗材采购",
           "invoice_no": "INVE0300001",
           "occurred_on": "2026-10-30",
           "quantity": "3",
@@ -154,7 +154,7 @@
         {
           "line_no": 2,
           "category": "daily_consumables",
-          "description": "门店经营采购耗材",
+          "description": "仓库打包耗材采购",
           "invoice_no": "INVE0300001",
           "occurred_on": "2026-10-30",
           "quantity": "1",
@@ -168,7 +168,7 @@
         {
           "line_no": 3,
           "category": "daily_consumables",
-          "description": "门店经营采购耗材",
+          "description": "仓库打包耗材采购",
           "invoice_no": "INVE0300001",
           "occurred_on": "2026-10-30",
           "quantity": "1",
@@ -211,12 +211,12 @@
           "store_clerk"
         ]
       },
-      "reason": "门店经营采购耗材",
+      "reason": "仓库打包耗材采购",
       "lines": [
         {
           "line_no": 1,
           "category": "daily_consumables",
-          "description": "门店经营采购耗材",
+          "description": "仓库打包耗材采购",
           "invoice_no": "INVE0400001",
           "occurred_on": "2026-10-30",
           "quantity": "1",
@@ -259,12 +259,12 @@
           "store_clerk"
         ]
       },
-      "reason": "门店经营采购耗材",
+      "reason": "仓库打包耗材采购",
       "lines": [
         {
           "line_no": 1,
           "category": "daily_consumables",
-          "description": "门店经营采购耗材",
+          "description": "仓库打包耗材采购",
           "invoice_no": "INVE0500001",
           "occurred_on": "2026-10-30",
           "quantity": "1",
@@ -307,12 +307,12 @@
           "store_clerk"
         ]
       },
-      "reason": "门店经营采购耗材",
+      "reason": "仓库打包耗材采购",
       "lines": [
         {
           "line_no": 1,
           "category": "daily_consumables",
-          "description": "门店经营采购耗材",
+          "description": "仓库打包耗材采购",
           "invoice_no": "INVPAID01",
           "occurred_on": "2026-10-30",
           "quantity": "1",
@@ -355,12 +355,12 @@
           "store_clerk"
         ]
       },
-      "reason": "门店经营采购耗材",
+      "reason": "仓库打包耗材采购",
       "lines": [
         {
           "line_no": 1,
           "category": "daily_consumables",
-          "description": "门店经营采购耗材",
+          "description": "仓库打包耗材采购",
           "invoice_no": "INVE0700001",
           "occurred_on": "2026-10-30",
           "quantity": "1",
@@ -403,12 +403,12 @@
           "store_clerk"
         ]
       },
-      "reason": "门店经营采购耗材",
+      "reason": "仓库打包耗材采购",
       "lines": [
         {
           "line_no": 1,
           "category": "daily_consumables",
-          "description": "门店经营采购耗材",
+          "description": "仓库打包耗材采购",
           "invoice_no": "INVE0800001",
           "occurred_on": "2026-10-30",
           "quantity": "1",
@@ -451,12 +451,12 @@
           "store_clerk"
         ]
       },
-      "reason": "门店经营采购耗材",
+      "reason": "仓库打包耗材采购",
       "lines": [
         {
           "line_no": 1,
           "category": "daily_consumables",
-          "description": "门店经营采购耗材",
+          "description": "仓库打包耗材采购",
           "invoice_no": "INVE0900001",
           "occurred_on": "2026-10-30",
           "quantity": "1",
@@ -499,12 +499,12 @@
           "store_clerk"
         ]
       },
-      "reason": "门店经营采购耗材",
+      "reason": "仓库打包耗材采购",
       "lines": [
         {
           "line_no": 1,
           "category": "daily_consumables",
-          "description": "门店经营采购耗材",
+          "description": "仓库打包耗材采购",
           "invoice_no": "INVE1000001",
           "occurred_on": "2026-10-30",
           "quantity": "1",
@@ -547,12 +547,12 @@
           "store_clerk"
         ]
       },
-      "reason": "门店经营采购耗材",
+      "reason": "仓库打包耗材采购",
       "lines": [
         {
           "line_no": 1,
           "category": "daily_consumables",
-          "description": "门店经营采购耗材",
+          "description": "仓库打包耗材采购",
           "invoice_no": "INVE1100001",
           "occurred_on": "2026-10-30",
           "quantity": "1",
@@ -595,12 +595,12 @@
           "store_clerk"
         ]
       },
-      "reason": "门店经营采购耗材",
+      "reason": "仓库打包耗材采购",
       "lines": [
         {
           "line_no": 1,
           "category": "equipment_repair",
-          "description": "门店经营采购耗材",
+          "description": "仓库打包耗材采购",
           "invoice_no": "INVE1200001",
           "occurred_on": "2026-10-30",
           "quantity": "1",
@@ -642,12 +642,12 @@
           "store_clerk"
         ]
       },
-      "reason": "门店经营采购耗材",
+      "reason": "仓库打包耗材采购",
       "lines": [
         {
           "line_no": 1,
           "category": "travel_lodging",
-          "description": "门店经营采购耗材",
+          "description": "仓库打包耗材采购",
           "invoice_no": "INVE1300001",
           "occurred_on": "2026-10-30",
           "quantity": "2",
@@ -690,12 +690,12 @@
           "store_clerk"
         ]
       },
-      "reason": "门店经营采购耗材",
+      "reason": "仓库打包耗材采购",
       "lines": [
         {
           "line_no": 1,
           "category": "daily_consumables",
-          "description": "门店经营采购耗材",
+          "description": "仓库打包耗材采购",
           "invoice_no": "INVE1400001",
           "occurred_on": "2026-09-17",
           "quantity": "1",
@@ -738,12 +738,12 @@
           "store_clerk"
         ]
       },
-      "reason": "门店经营采购耗材",
+      "reason": "仓库打包耗材采购",
       "lines": [
         {
           "line_no": 1,
           "category": "daily_consumables",
-          "description": "门店经营采购耗材",
+          "description": "仓库打包耗材采购",
           "invoice_no": "INVE1500001",
           "occurred_on": "2026-10-30",
           "quantity": "1",
@@ -786,7 +786,7 @@
           "store_clerk"
         ]
       },
-      "reason": "门店耗材收款卡 6222 0212 3456 7890 128，身份证 11010519491231002X，电话 +86 138 0013 8000。",
+      "reason": "打包耗材收款卡 6222 0212 3456 7890 128，身份证 11010519491231002X，电话 +86 138 0013 8000。",
       "lines": [
         {
           "line_no": 1,
@@ -840,7 +840,7 @@
         {
           "line_no": 1,
           "category": "daily_consumables",
-          "description": "门店经营采购耗材",
+          "description": "仓库打包耗材采购",
           "invoice_no": "INVE1700001",
           "occurred_on": "2026-10-30",
           "quantity": "1",
@@ -876,7 +876,7 @@
       "subject_type": "contract",
       "contract_id": "C01",
       "contract_type": "franchise_procurement",
-      "title": "门店加盟采购合同",
+      "title": "电商自营商品年度采购合同",
       "store_code": "STORE_C01",
       "applicant": {
         "user_id": "buyer_01",
@@ -886,7 +886,7 @@
         ]
       },
       "counterparty": {
-        "name": "虚构测试采购公司",
+        "name": "虚构测试供应商有限公司",
         "unified_credit_code": "91330100MA12345C01",
         "is_franchisee": true
       },
@@ -920,7 +920,7 @@
       "subject_type": "contract",
       "contract_id": "C02",
       "contract_type": "franchise_procurement",
-      "title": "门店加盟采购合同",
+      "title": "电商自营商品年度采购合同",
       "store_code": "STORE_C02",
       "applicant": {
         "user_id": "buyer_01",
@@ -930,7 +930,7 @@
         ]
       },
       "counterparty": {
-        "name": "虚构测试采购公司",
+        "name": "虚构测试供应商有限公司",
         "unified_credit_code": "91330100MA12345C02",
         "is_franchisee": true
       },
@@ -964,7 +964,7 @@
       "subject_type": "contract",
       "contract_id": "C03",
       "contract_type": "franchise_procurement",
-      "title": "门店加盟采购合同",
+      "title": "电商自营商品年度采购合同",
       "store_code": "STORE_C03",
       "applicant": {
         "user_id": "buyer_01",
@@ -974,7 +974,7 @@
         ]
       },
       "counterparty": {
-        "name": "虚构测试采购公司",
+        "name": "虚构测试供应商有限公司",
         "unified_credit_code": "91330100MA12345C03",
         "is_franchisee": true
       },
@@ -1008,7 +1008,7 @@
       "subject_type": "contract",
       "contract_id": "C04",
       "contract_type": "franchise_procurement",
-      "title": "门店加盟采购合同",
+      "title": "电商自营商品年度采购合同",
       "store_code": "STORE_C04",
       "applicant": {
         "user_id": "buyer_01",
@@ -1018,7 +1018,7 @@
         ]
       },
       "counterparty": {
-        "name": "虚构测试采购公司",
+        "name": "虚构测试供应商有限公司",
         "unified_credit_code": "91330100MA12345C04",
         "is_franchisee": true
       },
@@ -1052,7 +1052,7 @@
       "subject_type": "contract",
       "contract_id": "C05",
       "contract_type": "franchise_procurement",
-      "title": "门店加盟采购合同",
+      "title": "电商自营商品年度采购合同",
       "store_code": "STORE_C05",
       "applicant": {
         "user_id": "buyer_01",
@@ -1062,7 +1062,7 @@
         ]
       },
       "counterparty": {
-        "name": "虚构测试采购公司",
+        "name": "虚构测试供应商有限公司",
         "unified_credit_code": "91330100MA12345C05",
         "is_franchisee": true
       },
@@ -1096,7 +1096,7 @@
       "subject_type": "contract",
       "contract_id": "C06",
       "contract_type": "franchise_procurement",
-      "title": "门店加盟采购合同",
+      "title": "电商自营商品年度采购合同",
       "store_code": "STORE_C06",
       "applicant": {
         "user_id": "buyer_01",
@@ -1106,7 +1106,7 @@
         ]
       },
       "counterparty": {
-        "name": "虚构测试采购公司",
+        "name": "虚构测试供应商有限公司",
         "unified_credit_code": "91330100MA12345C06",
         "is_franchisee": true
       },
@@ -1140,7 +1140,7 @@
       "subject_type": "contract",
       "contract_id": "C07",
       "contract_type": "franchise_procurement",
-      "title": "门店加盟采购合同",
+      "title": "电商自营商品年度采购合同",
       "store_code": "STORE_C07",
       "applicant": {
         "user_id": "buyer_01",
@@ -1150,7 +1150,7 @@
         ]
       },
       "counterparty": {
-        "name": "虚构测试采购公司",
+        "name": "虚构测试供应商有限公司",
         "unified_credit_code": "91330100MA12345C07",
         "is_franchisee": true,
         "contact_phone": "+86 138 0013 8000",
@@ -1187,7 +1187,7 @@
       "subject_type": "contract",
       "contract_id": "C08",
       "contract_type": "franchise_procurement",
-      "title": "门店加盟采购合同",
+      "title": "电商自营商品年度采购合同",
       "store_code": "STORE_C08",
       "applicant": {
         "user_id": "buyer_01",
@@ -1197,7 +1197,7 @@
         ]
       },
       "counterparty": {
-        "name": "虚构测试采购公司",
+        "name": "虚构测试供应商有限公司",
         "unified_credit_code": "91330100MA12345C08",
         "is_franchisee": true
       },

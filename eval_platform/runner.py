@@ -62,7 +62,7 @@ async def load_eval_suite(path: Path) -> list[EvalSample]:
     content = await asyncio.to_thread(path.read_text, encoding="utf-8")
     samples = []
     seen = set()
-    # JSON array is also supported for the versioned catering suite.
+    # JSON array is also supported for the versioned ecommerce suite.
     if path.suffix.lower() == ".json":
         try:
             entries = json.loads(content)

@@ -16,10 +16,10 @@ async def samples():
 async def test_suite_coverage(samples):
     assert len(samples)>=10
     assert all(s.scenario.value=='store_sop' for s in samples)
-    assert sum('drink' in s.tags for s in samples)>=3
+    assert sum('sku_spec' in s.tags for s in samples)>=3
     equipment=[s for s in samples if 'equipment' in s.tags]
     assert len(equipment)>=3 and all('page_2' in s.tags for s in equipment)
-    assert all(any(w in s.question for w in ['不进水','冰块偏薄','漏水','封口不牢','不加热']) for s in equipment)
+    assert all(any(w in s.question for w in ['不出纸','打印偏淡','漏水','扫码不灵','不充电','批量超时未发货']) for s in equipment)
     assert sum(s.is_acl_redline for s in samples)>=3
     assert any('numeric_hallucination_trap' in s.tags for s in samples)
 
@@ -28,8 +28,8 @@ async def test_e2e_gate_report_and_negative_control(sop_service,samples,tmp_path
     # A question-indexed script demonstrates deterministic structured output while
     # answer generation still sees only the source passages, never evaluation labels.
     model=ScriptedChatModel(by_question={
-        '鲜柠檬茶 500ml 柠檬片多少克':{
-            IntentSlotExtraction:IntentSlotExtraction(intent='drink_sop',confidence=1,slots=ExtractedSlots(drink_name='鲜柠檬茶'))}})
+        '蛋白粉随行杯 500ml 蛋白粉多少克':{
+            IntentSlotExtraction:IntentSlotExtraction(intent='drink_sop',confidence=1,slots=ExtractedSlots(drink_name='蛋白粉随行杯'))}})
     baseline,candidate,diff,leaked,leak_diff=await compare(sop_service,samples,model)
     assert baseline.summary.acl_redline_passed
     assert baseline.summary.retrieval_hit_rate>=.8

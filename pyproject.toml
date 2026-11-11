@@ -1,7 +1,7 @@
 [project]
 name = "enterprise-ai-platform"
 version = "0.1.0"
-description = "面向万店级连锁餐饮集团的企业级 AI 平台（数据中台 / 评测中台 / 业务智能体矩阵）"
+description = "面向综合电商企业的企业级 AI 平台（数据中台 / 评测中台 / 业务智能体矩阵）"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

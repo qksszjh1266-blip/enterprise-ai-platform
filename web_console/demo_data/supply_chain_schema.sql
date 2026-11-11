@@ -10,7 +10,7 @@ CREATE TABLE dim_material (
   material_id TEXT PRIMARY KEY, material_name TEXT NOT NULL, category TEXT NOT NULL, base_unit TEXT NOT NULL,
   shelf_life_days INTEGER NOT NULL, storage_condition TEXT NOT NULL);
 
--- 门店销量
+-- 店铺销量
 CREATE TABLE fact_store_sales_daily (
   biz_date TEXT NOT NULL, store_id TEXT NOT NULL, region_id TEXT NOT NULL, warehouse_id TEXT NOT NULL,
   sku_id TEXT NOT NULL, sku_name TEXT NOT NULL, cups_sold INTEGER NOT NULL, net_revenue REAL NOT NULL,
@@ -30,7 +30,7 @@ CREATE TABLE fact_inventory_batch (
   inbound_date TEXT NOT NULL, inbound_qty REAL NOT NULL, remaining_qty REAL NOT NULL,
   supplier_cost_price REAL, PRIMARY KEY (snapshot_date, warehouse_id, batch_no));
 
--- 原料损耗
+-- 商品货损
 CREATE TABLE fact_material_loss (
   loss_id INTEGER PRIMARY KEY, loss_date TEXT NOT NULL, region_id TEXT NOT NULL, warehouse_id TEXT NOT NULL,
   material_id TEXT NOT NULL, batch_no TEXT, loss_qty REAL NOT NULL,

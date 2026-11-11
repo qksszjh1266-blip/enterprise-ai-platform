@@ -135,7 +135,7 @@ class SqlLoopResult(BaseModel):
 
 
 class SupplyChainBIAgent:
-    """餐饮供应链库存预警与自然语言经营分析智能体。"""
+    """电商供应链库存预警与自然语言经营分析智能体。"""
 
     def __init__(
         self,
@@ -476,14 +476,14 @@ class SupplyChainBIAgent:
         SAFETY_STOCK_BREACH（position 每行）：available_qty < safety_stock_qty
             gap = safety_stock_qty − available_qty；dos = available_qty / avg_daily_outbound_7d（分母 0 → dos=0）
             severity: dos ≤ p1_days_of_supply → P1；≤ p2 → P2；否则 P3
-            action: 同原料存在授权范围内（position 中出现的其他仓）且调出 gap 后 dos ≥ transfer_min_surplus_days 的仓
+            action: 同商品存在授权范围内（position 中出现的其他仓）且调出 gap 后 dos ≥ transfer_min_surplus_days 的仓
                     → TRANSFER_IN（counterpart = 满足条件中 dos 最大者，同分按 warehouse_id 升序）；否则 REPLENISH
             suggested_qty = gap
         NEAR_EXPIRY_OVERSTOCK（batches 每行，days_to_expiry ≤ near_expiry_days）：
             turnover = remaining_qty / avg_daily_outbound_7d（分母 0 或 NULL → +inf）
             积压 ⇔ turnover > days_to_expiry × overstock_ratio；overstock = remaining_qty − avg × days_to_expiry（≥ 0）
             severity: days_to_expiry ≤ p1_days_to_expiry → P1；否则 P2
-            action: days_to_expiry ≤ 0 → INSPECT_AND_DISPOSE；授权范围内存在同原料 dos 更低（消耗更快）的仓
+            action: days_to_expiry ≤ 0 → INSPECT_AND_DISPOSE；授权范围内存在同商品 dos 更低（消耗更快）的仓
                     → TRANSFER_OUT（counterpart 取 dos 最小者）；否则 PRIORITIZE_CONSUMPTION
         - counterpart_warehouse_id 必须 ∈ position 结果中的仓库（即已受行级范围约束），永不跨范围建议调拨；
         - alert_id = sha256("|".join([type, warehouse, material, batch or "-", as_of_date.isoformat()]))[:16]；
@@ -582,7 +582,7 @@ class SupplyChainBIAgent:
            |cell − value| ≤ 0.5 × 10^-dp（dp 取列名匹配的 metric.decimal_places；无匹配取 2）。
         2. 结论正文中的每个数字 token（含小数、百分号、千分位）必须能对应到：某 KeyFigure 的原值或其
            format_metric_value 展示值（RATIO 允许 ×100 后按 dp-2 位比较）；或 len(alerts) / 各 severity 计数；
-           或 as_of_date / 意图时间范围的年月日组成部分。仓库 / 原料编码等含字母 token 不参与。
+           或 as_of_date / 意图时间范围的年月日组成部分。仓库 / 商品编码等含字母 token 不参与。
         3. 结论中不得出现 table.columns 以外的列名（防止模型编造口径字段）。
         """
         errors = []

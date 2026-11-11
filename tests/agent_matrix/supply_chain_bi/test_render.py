@@ -6,7 +6,7 @@ from agent_matrix.supply_chain_bi.eval_judge import DataAnalysisJudge
 from .sim_db import AS_OF
 
 @pytest.mark.parametrize('text,expected',[
- ('2026-11-01 WH_E01 MAT_LEMON B_LEMON_1027 5.2%',[(5.2,1,True)]),
+ ('2026-11-01 WH_E01 MAT_PROBIOTIC B_PROBIO_1027 5.2%',[(5.2,1,True)]),
  ('2026年11月1日 损耗率5.00%，数量1,234.5',[(5,2,True),(1234.5,1,False)]),
  ('剩余 -1 天 0.0523', [(-1,0,False),(.0523,4,False)]),
 ])
@@ -29,7 +29,7 @@ def test_context_round_trip():
 
 async def test_judge_accuracy_and_satisfaction():
     judge=DataAnalysisJudge()
-    assert (await judge.score_accuracy(question='损耗率',answer='柠檬 5.0%',reference_answer=None,expected_keywords=['柠檬','5%'])).score==1
+    assert (await judge.score_accuracy(question='损耗率',answer='益生菌粉 5.0%',reference_answer=None,expected_keywords=['益生菌粉','5%'])).score==1
     assert (await judge.score_accuracy(question='',answer='5.0%',reference_answer=None,expected_keywords=['7.5%'])).score==0
     with pytest.raises(ValueError):await judge.score_accuracy(question='',answer='hello',reference_answer=None,expected_keywords=[])
 

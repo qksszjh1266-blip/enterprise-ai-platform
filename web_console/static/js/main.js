@@ -8,9 +8,9 @@ import { createEval } from './modules/eval.js';
 import { createLlmDialog } from './modules/llm_config.js';
 
 const MODULES = [
-  { id: 'sop', label: '门店 SOP 督导助手', desc: '多轮问答 · 强制溯源 · 排障转报修', icon: 'chat', create: createSop },
-  { id: 'bi', label: '供应链经营分析', desc: '受控 Text-to-SQL · 静态守卫 · 只读沙箱', icon: 'chart', create: createBi },
-  { id: 'finance', label: '财务与合同预审', desc: 'Decimal 规则 · PII 脱敏 · 人工审批', icon: 'shield', create: createFinance },
+  { id: 'sop', label: '电商运营 SOP 与工单协同', desc: '规格参数 · 售后规则 · 设备与履约异常派单', icon: 'chat', create: createSop },
+  { id: 'bi', label: '经营分析与进销存预警', desc: '受控 Text-to-SQL · 静态守卫 · 只读沙箱', icon: 'chart', create: createBi },
+  { id: 'finance', label: '财务报销与采购合同审批', desc: 'Decimal 规则 · PII 脱敏 · 人工审批', icon: 'shield', create: createFinance },
   { id: 'knowledge', label: '知识数据中台检索器', desc: 'ACL 前置过滤 · 双路召回 · 父子切块', icon: 'search', create: createKnowledge },
   { id: 'eval', label: '评测中台与门禁看板', desc: '指标 · 失败归因 · 回归门禁', icon: 'gauge', create: createEval },
 ];

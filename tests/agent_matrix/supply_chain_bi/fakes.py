@@ -60,22 +60,22 @@ def metric_sql(metric, level, question=''):
     p=lambda alias: sem.render_scope_predicate(alias,level)
     if metric=='material_loss_rate':
         if '格式化' in question:
-            return "SELECT 0.0523 AS loss_rate FROM dim_material m WHERE m.material_id = 'MAT_LEMON'"
+            return "SELECT 0.0523 AS loss_rate FROM dim_material m WHERE m.material_id = 'MAT_PROBIOTIC'"
         return f"""WITH losses AS (
             SELECT l.warehouse_id, SUM(l.loss_qty) AS loss_qty FROM fact_material_loss l
-            WHERE {p('l')} AND l.material_id='MAT_LEMON' AND l.loss_date BETWEEN date(:as_of_date,'-29 days') AND :as_of_date GROUP BY l.warehouse_id
+            WHERE {p('l')} AND l.material_id='MAT_PROBIOTIC' AND l.loss_date BETWEEN date(:as_of_date,'-29 days') AND :as_of_date GROUP BY l.warehouse_id
         ), outbound AS (
             SELECT i.warehouse_id, SUM(i.outbound_qty) AS outbound_qty FROM fact_warehouse_inventory_daily i
-            WHERE {p('i')} AND i.material_id='MAT_LEMON' AND i.snapshot_date BETWEEN date(:as_of_date,'-29 days') AND :as_of_date GROUP BY i.warehouse_id
+            WHERE {p('i')} AND i.material_id='MAT_PROBIOTIC' AND i.snapshot_date BETWEEN date(:as_of_date,'-29 days') AND :as_of_date GROUP BY i.warehouse_id
         ) SELECT l.warehouse_id, 1.0*l.loss_qty/NULLIF(o.outbound_qty+l.loss_qty,0) AS loss_rate
         FROM losses l JOIN outbound o ON o.warehouse_id=l.warehouse_id ORDER BY l.warehouse_id"""
     if metric=='safety_stock_gap':
         narrowing = " AND i.warehouse_id='WH_S01'" if 'WH_S01' in question else " AND i.region_id='R_SOUTH'" if '华南' in question else ''
         return f"SELECT i.warehouse_id, i.material_id, MAX(i.safety_stock_qty-(i.on_hand_qty+i.in_transit_qty-i.reserved_qty),0) AS gap_qty FROM fact_warehouse_inventory_daily i WHERE {p('i')} AND i.snapshot_date=:as_of_date{narrowing} ORDER BY i.warehouse_id, i.material_id"
     if metric=='days_of_supply':
-        return f"SELECT i.warehouse_id, (i.on_hand_qty+i.in_transit_qty-i.reserved_qty)/NULLIF(i.avg_daily_outbound_7d,0) AS days_of_supply FROM fact_warehouse_inventory_daily i WHERE {p('i')} AND i.snapshot_date=:as_of_date AND i.material_id='MAT_BLACK_TEA' ORDER BY i.warehouse_id"
+        return f"SELECT i.warehouse_id, (i.on_hand_qty+i.in_transit_qty-i.reserved_qty)/NULLIF(i.avg_daily_outbound_7d,0) AS days_of_supply FROM fact_warehouse_inventory_daily i WHERE {p('i')} AND i.snapshot_date=:as_of_date AND i.material_id='MAT_COFFEE' ORDER BY i.warehouse_id"
     if metric=='shelf_life_turnover_days':
-        return f"SELECT b.warehouse_id,b.batch_no,b.remaining_qty/NULLIF(i.avg_daily_outbound_7d,0) AS turnover_days FROM fact_inventory_batch b JOIN fact_warehouse_inventory_daily i ON i.warehouse_id=b.warehouse_id AND i.material_id=b.material_id AND i.snapshot_date=b.snapshot_date WHERE {p('b')} AND {p('i')} AND b.snapshot_date=:as_of_date AND b.material_id='MAT_LEMON' ORDER BY b.warehouse_id"
+        return f"SELECT b.warehouse_id,b.batch_no,b.remaining_qty/NULLIF(i.avg_daily_outbound_7d,0) AS turnover_days FROM fact_inventory_batch b JOIN fact_warehouse_inventory_daily i ON i.warehouse_id=b.warehouse_id AND i.material_id=b.material_id AND i.snapshot_date=b.snapshot_date WHERE {p('b')} AND {p('i')} AND b.snapshot_date=:as_of_date AND b.material_id='MAT_PROBIOTIC' ORDER BY b.warehouse_id"
     if metric=='near_expiry_qty':
         return f"SELECT b.warehouse_id, SUM(b.remaining_qty) AS near_expiry_qty FROM fact_inventory_batch b WHERE {p('b')} AND b.snapshot_date=:as_of_date AND julianday(b.expiry_date)-julianday(:as_of_date) BETWEEN 0 AND 7 GROUP BY b.warehouse_id ORDER BY b.warehouse_id"
     return f"SELECT s.warehouse_id,SUM(s.cups_sold) AS cups_sold FROM fact_store_sales_daily s WHERE {p('s')} AND s.biz_date BETWEEN date(:as_of_date,'-6 days') AND :as_of_date GROUP BY s.warehouse_id ORDER BY s.warehouse_id"

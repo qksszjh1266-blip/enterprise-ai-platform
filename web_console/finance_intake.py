@@ -27,8 +27,8 @@ ATTACHMENTS = {"发票": AttachmentType.INVOICE, "采购清单": AttachmentType.
                "报价单": AttachmentType.QUOTATION, "预算审批": AttachmentType.BUDGET_APPROVAL,
                "合同": AttachmentType.CONTRACT, "事前审批": AttachmentType.PRE_APPROVAL,
                "业务凭证": AttachmentType.BUSINESS_VOUCHER}
-CONTRACT_TYPES = {"加盟采购": ContractType.FRANCHISE_PROCUREMENT, "设备采购": ContractType.EQUIPMENT_PURCHASE,
-                  "门店租赁": ContractType.STORE_LEASE, "装修工程": ContractType.RENOVATION_SERVICE,
+CONTRACT_TYPES = {"商品采购": ContractType.FRANCHISE_PROCUREMENT, "设备采购": ContractType.EQUIPMENT_PURCHASE,
+                  "仓库租赁": ContractType.STORE_LEASE, "装修工程": ContractType.RENOVATION_SERVICE,
                   "物流配送": ContractType.LOGISTICS_SERVICE, "其他": ContractType.OTHER}
 
 
@@ -128,7 +128,7 @@ def _parse_expense(fields: dict[str, list[str]]) -> ExpenseAuditSubmission:
                          "issue_date": _date(issued, "开票日期"), "seller_name": seller, "seller_tax_id": tax_id,
                          "amount_excl_tax": excl, "tax_amount": tax, "amount_incl_tax": excl + tax})
     return _validated(ExpenseAuditSubmission, {
-        "subject_type": "expense", "claim_id": _one(fields, "单据编号"), "store_code": _one(fields, "门店编码"),
+        "subject_type": "expense", "claim_id": _one(fields, "单据编号"), "store_code": _one(fields, "店铺编码"),
         "applicant": _applicant(fields), "reason": _one(fields, "报销事由"), "lines": lines, "invoices": invoices,
         "declared_total": _money(_one(fields, "申报总额"), "申报总额"), "attachments": _attachments(fields),
         "pre_approval_ref": _one(fields, "事前审批单", required=False) or None,
@@ -150,7 +150,7 @@ def _parse_contract(fields: dict[str, list[str]]) -> ContractAuditSubmission:
     return _validated(ContractAuditSubmission, {
         "subject_type": "contract", "contract_id": _one(fields, "合同编号"),
         "contract_type": _lookup(CONTRACT_TYPES, _one(fields, "合同类型"), "合同类型"), "title": _one(fields, "合同名称"),
-        "store_code": _one(fields, "门店编码", required=False) or None, "applicant": _applicant(fields),
+        "store_code": _one(fields, "店铺编码", required=False) or None, "applicant": _applicant(fields),
         "counterparty": {"name": name, "unified_credit_code": credit_code, "contact_phone": phone, "bank_account": account},
         "subject_amount": _money(_one(fields, "标的额"), "标的额"), "tax_rate": _money(rate, "税率") if rate else None,
         "payment_term_days": int(term), "payment_schedule": schedule, "payment_terms_text": _one(fields, "付款条款"),

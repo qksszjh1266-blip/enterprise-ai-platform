@@ -9,8 +9,8 @@ from tests.agent_matrix.store_sop.fakes import ScriptedChatModel, InMemorySessio
 
 async def publish_store_corpus(manager):
     await publish_corpus(manager)
-    content = await asyncio.to_thread((ROOT / 'mock_docs/store_sop_sealer_training.md').read_text, encoding='utf-8')
-    result = await manager.sync_document(DocumentIngestRequest(doc_id='sop_sealer', title='封口机培训演示',
+    content = await asyncio.to_thread((ROOT / 'mock_docs/store_sop_scanner_training.md').read_text, encoding='utf-8')
+    result = await manager.sync_document(DocumentIngestRequest(doc_id='sop_scanner', title='扫码枪培训演示',
         source_system='training', content=content, dept_id='store_ops', allowed_roles=['clerk','store_manager']))
     assert result.outcome == SyncOutcome.PUBLISHED
     await manager.aclose()

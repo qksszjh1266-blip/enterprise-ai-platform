@@ -18,7 +18,7 @@ SEARCH = "search_enterprise_knowledge"
 METRICS = "list_supply_chain_metrics"
 PROMPT = "sop_citation_qa_prompt"
 
-CLERK_VISIBLE = {"sop_drink", "sop_equipment", "sop_sealer", "fin_expense_policy"}
+CLERK_VISIBLE = {"sop_sku_spec", "sop_equipment", "sop_scanner", "fin_expense_policy"}
 
 
 def _client(kb, principal=STORE_CLERK) -> Client:
@@ -87,7 +87,7 @@ async def test_prompt_discovery_contract(demo_kb):
 
 async def test_clerk_search_returns_structured_evidence(demo_kb):
     async with _client(demo_kb) as client:
-        result = await _search(client, query="制冰机不出冰怎么办", department="store_ops", role="clerk", top_k=3)
+        result = await _search(client, query="热敏打单机不出纸怎么办", department="store_ops", role="clerk", top_k=3)
     assert result.is_error is False
     payload = KnowledgeSearchResult.model_validate(result.structured_content)
     assert 1 <= payload.total <= 3
@@ -125,7 +125,7 @@ async def test_department_filter_isolates_other_departments(demo_kb):
 
 @pytest.mark.parametrize("missing", ["query", "department", "role"])
 async def test_missing_required_argument_is_rejected(demo_kb, missing):
-    arguments = {"query": "制冰机", "department": "store_ops", "role": "clerk"}
+    arguments = {"query": "热敏打单机", "department": "store_ops", "role": "clerk"}
     arguments.pop(missing)
     async with _client(demo_kb) as client:
         text = _error_text(await client.call_tool(SEARCH, arguments))
@@ -158,7 +158,7 @@ async def test_out_of_scope_department_or_role_is_denied(demo_kb, department, ro
     ({"top_k": 21}, "top_k"),
 ])
 async def test_invalid_arguments_are_rejected(demo_kb, arguments, field):
-    base = {"query": "制冰机", "department": "store_ops", "role": "clerk"}
+    base = {"query": "热敏打单机", "department": "store_ops", "role": "clerk"}
     async with _client(demo_kb) as client:
         text = _error_text(await client.call_tool(SEARCH, base | arguments))
     assert _rejected_fields(text) == {field}
@@ -197,9 +197,9 @@ async def test_metrics_keyword_length_is_bounded(demo_kb):
 
 async def test_search_output_feeds_citation_prompt_end_to_end(demo_kb):
     async with _client(demo_kb) as client:
-        search = await _search(client, query="封口机封口不牢", department="store_ops", role="clerk", top_k=3)
+        search = await _search(client, query="扫码枪扫码不灵", department="store_ops", role="clerk", top_k=3)
         prompt = await client.get_prompt(PROMPT, {
-            "question": "封口机封口不牢怎么处理？", "scenario": "equipment_fault",
+            "question": "扫码枪扫码不灵怎么处理？", "scenario": "equipment_fault",
             "evidence": json.dumps(search.structured_content, ensure_ascii=False)})
     assert [m.role for m in prompt.messages] == ["user", "user"]
     rules, context = (m.content.text for m in prompt.messages)
@@ -207,7 +207,7 @@ async def test_search_output_feeds_citation_prompt_end_to_end(demo_kb):
     assert f"1 至 {search.structured_content['total']}" in rules
     first = search.structured_content["evidence"][0]
     assert f"[来源1] 章节：{first['section_path']}" in context
-    assert context.rstrip().endswith("用户问题：封口机封口不牢怎么处理？")
+    assert context.rstrip().endswith("用户问题：扫码枪扫码不灵怎么处理？")
     assert first["source"]["doc_id"] not in context
 
 

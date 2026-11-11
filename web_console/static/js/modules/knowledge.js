@@ -3,10 +3,10 @@ import { errorOf, post } from '../core/api.js';
 import { badge, empty, errorNotice, kv, metric, ms, quickbar, section } from '../core/ui.js';
 
 const DEPTS = { store_ops: ['clerk', 'store_manager'], supply_chain: ['warehouse', 'supply_manager', 'hq_supply_analyst', 'procurement_manager'], finance: ['finance', 'finance_manager', 'legal'] };
-const DEPT_LABEL = { store_ops: '门店运营', supply_chain: '供应链', finance: '财务' };
-const ROLE_LABEL = { clerk: '店员', store_manager: '店长', warehouse: '仓管员', supply_manager: '供应链经理', hq_supply_analyst: '总部分析师', procurement_manager: '采购经理', finance: '财务专员', finance_manager: '财务经理', legal: '法务' };
+const DEPT_LABEL = { store_ops: '电商运营部', supply_chain: '供应链仓储部', finance: '财务部' };
+const ROLE_LABEL = { clerk: '运营专员', store_manager: '运营主管', warehouse: '仓管员', supply_manager: '供应链经理', hq_supply_analyst: '总部分析师', procurement_manager: '采购经理', finance: '财务专员', finance_manager: '财务经理', legal: '法务' };
 const CASES = [
-  { label: '同部门设备排障召回', kind: 'positive', query: '制冰机不进水如何排查', dept: 'store_ops', roles: ['clerk'] },
+  { label: '同部门设备排障召回', kind: 'positive', query: '热敏打单机不出纸如何排查', dept: 'store_ops', roles: ['clerk'] },
   { label: '跨部门权限过滤演示', kind: 'security', query: '费用审批矩阵与发票报销要求', dept: 'store_ops', roles: ['clerk'] },
   { label: '受限文档角色隔离演示', kind: 'security', query: '采购合同价格与供应商银行账户', dept: 'supply_chain', roles: ['warehouse'] },
 ];

@@ -1,5 +1,5 @@
 # =============================================================================
-# 财务报销与加盟采购合同合规预审助手 —— 平台 Workflow 编排定义
+# 财务报销与采购合同审批辅助助手（商品采购 / 仓储物流合同） —— 平台 Workflow 编排定义
 #
 # 定位：标准平台编排结构定义，字段布局对齐 Dify DSL（workflow 模式）便于在 Dify / HiAgent 上对照搭建；
 #       节点 id、模型凭据、工具 provider_id 需在目标平台生成。业务语义以 agent_matrix/finance_audit/agent.py
@@ -32,7 +32,7 @@ version: "0.1.5"
 app:
   mode: workflow
   name: 财务合规预审助手
-  description: 门店费用报销与加盟采购合同的合规预审（隐私脱敏 · Decimal 金额勾稽 · 重复发票与拆单拦截 · 高风险转人工）
+  description: 运营费用报销与商品采购合同的合规预审（隐私脱敏 · Decimal 金额勾稽 · 重复发票与拆单拦截 · 高风险转人工）
   icon: "receipt"
   use_icon_as_answer_icon: false
 

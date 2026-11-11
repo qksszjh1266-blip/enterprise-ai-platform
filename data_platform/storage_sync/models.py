@@ -157,7 +157,7 @@ class ParentChunkSchema(BaseModel):
     parent_id: str = Field(..., max_length=192)
     doc_id: str = Field(..., max_length=128)
     version: int = Field(..., ge=1)
-    section_path: str = Field(default="", description="标题层级路径，如 '门店SOP/开店流程/设备检查'")
+    section_path: str = Field(default="", description="标题层级路径，如 '电商运营SOP/开仓流程/设备检查'")
     full_content: str
     page_number: int | None = Field(default=None, ge=1)
 

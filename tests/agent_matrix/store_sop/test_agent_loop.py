@@ -9,7 +9,7 @@ from eval_platform.models import AgentInvocation
 from tests.eval_platform.conftest import chunk
 
 
-def request(user,message='鲜柠檬茶 500ml 柠檬片多少克',session=None):
+def request(user,message='蛋白粉随行杯 500ml 蛋白粉多少克',session=None):
     return StoreAgentTurnRequest(user_context=user,message=message,session_id=session)
 
 
@@ -21,8 +21,8 @@ async def test_drink_and_trace(agent,user,model,sop_service):
     response=await agent.handle_turn(request(user))
     assert response.stop_reason==StopReason.ANSWERED, response
     assert '40g' in response.answer
-    assert response.citations[0].doc_id=='sop_drink'
-    assert '标准配方与操作' in response.citations[0].section_path
+    assert response.citations[0].doc_id=='sop_sku_spec'
+    assert '同系列 SKU 规格参数表' in response.citations[0].section_path
     assert response.token_cost==sum(t.token_usage.total_tokens for t in response.tool_traces)>0
     assert [t.step_index for t in response.tool_traces]==list(range(1,response.steps_used+1))
     assert sum(t.tool_name.startswith('chat_model') for t in response.tool_traces)==len(model.calls)
@@ -32,7 +32,7 @@ async def test_drink_and_trace(agent,user,model,sop_service):
 
 
 @pytest.mark.parametrize('draft',[
-    GroundedAnswerDraft(answer='柠檬片 45g [来源1]',cited_context_indices=[1]),
+    GroundedAnswerDraft(answer='蛋白粉 45g [来源1]',cited_context_indices=[1]),
     GroundedAnswerDraft(answer='40g [来源9]',cited_context_indices=[9]),
     GroundedAnswerDraft(answer='40g [来源2]',cited_context_indices=[1]),
     GroundedAnswerDraft(answer='40g',cited_context_indices=[]),
@@ -48,25 +48,25 @@ async def test_fail_closed(agent,user,model,draft):
 
 
 async def test_multiturn_and_escalation(agent,user,tickets,sop_service):
-    one=await agent.handle_turn(request(user,'制冰机坏了'))
+    one=await agent.handle_turn(request(user,'热敏打单机坏了'))
     assert one.stop_reason==StopReason.CLARIFICATION_REQUESTED
     assert one.clarification_slots==[SlotName.FAULT_SYMPTOM]
     assert not sop_service.vector_search.calls
-    two=await agent.handle_turn(request(user,'不进水',one.session_id))
-    assert two.stop_reason==StopReason.ANSWERED and '确认进水阀开启' in two.answer
+    two=await agent.handle_turn(request(user,'不出纸',one.session_id))
+    assert two.stop_reason==StopReason.ANSWERED and '确认纸仓无卡纸' in two.answer
     assert two.citations[0].doc_id=='sop_equipment'
     assert (await agent.session_store.load(one.session_id)).turn_count==2
-    three=await agent.handle_turn(request(user,'都检查过了还是不进水，设备 ICE-008',one.session_id))
+    three=await agent.handle_turn(request(user,'都检查过了还是不出纸，设备 PRT-008',one.session_id))
     assert three.stop_reason==StopReason.ESCALATED
-    assert three.escalation_ticket.equipment_id=='ICE-008'
+    assert three.escalation_ticket.equipment_id=='PRT-008'
     assert three.ticket_receipt.status==TicketStatus.CREATED
-    four=await agent.handle_turn(request(user,'都检查过了还是不进水，设备 ICE-008',one.session_id))
+    four=await agent.handle_turn(request(user,'都检查过了还是不出纸，设备 PRT-008',one.session_id))
     assert four.ticket_receipt.ticket_id==three.ticket_receipt.ticket_id
     assert len(tickets.submitted)==1
     assert any(t.step==LoopStep.ESCALATE for t in three.tool_traces)
 
 
-@pytest.mark.parametrize('message,stop',[('制冰机有焦味',StopReason.ESCALATED),('机器冒烟了',StopReason.CLARIFICATION_REQUESTED)])
+@pytest.mark.parametrize('message,stop',[('热敏打单机有焦味',StopReason.ESCALATED),('机器冒烟了',StopReason.CLARIFICATION_REQUESTED)])
 async def test_safety(agent,user,sop_service,message,stop):
     result=await agent.handle_turn(request(user,message))
     assert result.stop_reason==stop
@@ -84,7 +84,7 @@ async def test_safety(agent,user,sop_service,message,stop):
 async def test_clarification_limit(agent,user):
     session=None
     for _ in range(3):
-        result=await agent.handle_turn(request(user,'制冰机坏了',session))
+        result=await agent.handle_turn(request(user,'热敏打单机坏了',session))
         session=result.session_id
     assert not result.needs_clarification and result.refused
     assert (await agent.session_store.load(session)).clarification_rounds==2
@@ -92,13 +92,13 @@ async def test_clarification_limit(agent,user):
 
 async def test_low_confidence_and_switch(agent,user,model):
     model.scripts[IntentSlotExtraction].append(IntentSlotExtraction(intent='equipment_fault',confidence=.1,
-        slots=ExtractedSlots(equipment_model='制冰机',fault_symptom='不进水')))
-    result=await agent.handle_turn(request(user,'制冰机不进水'))
+        slots=ExtractedSlots(equipment_model='热敏打单机',fault_symptom='不出纸')))
+    result=await agent.handle_turn(request(user,'热敏打单机不出纸'))
     assert result.needs_clarification and len(result.clarification_slots)==2
     state=await agent.session_store.load(result.session_id)
-    merged=agent._merge_extraction(state,extraction(drink_name='鲜柠檬茶'))
+    merged=agent._merge_extraction(state,extraction(drink_name='蛋白粉随行杯'))
     assert merged.clarification_rounds==0 and merged.slots.equipment_model is None
-    assert state.slots.equipment_model=='制冰机'
+    assert state.slots.equipment_model=='热敏打单机'
 
 
 async def test_cross_department_refusal(agent,user,sop_service):
@@ -111,7 +111,7 @@ async def test_cross_department_refusal(agent,user,sop_service):
 async def test_acl_front_filter(agent,user,model):
     model.scripts[IntentSlotExtraction].append(extraction('store_ops_general'))
     user=user.model_copy(update={'dept_id':'supply_chain'})
-    outcome=await agent._run_loop(agent._new_session(session_id='s',user_context=user),message='门店手册',trace_id=None)
+    outcome=await agent._run_loop(agent._new_session(session_id='s',user_context=user),message='店铺手册',trace_id=None)
     assert outcome.response.refused and outcome.generation_contexts==[]
 
 
@@ -161,20 +161,20 @@ async def test_retrieval_limit_and_illegal_arguments(agent,user,model):
 
 async def test_ticket_failure(agent,user,tickets):
     tickets.fail=RuntimeError('/secret')
-    result=await agent.handle_turn(request(user,'制冰机有焦味'))
+    result=await agent.handle_turn(request(user,'热敏打单机有焦味'))
     assert result.stop_reason==StopReason.ESCALATED and result.escalation_ticket
     assert result.ticket_receipt is None and '待人工补录' in result.answer
     assert '已提交成功' not in result.answer and '/secret' not in result.model_dump_json()
 
 
 async def test_sessions_ownership_missing_conflict(agent,user,model):
-    result=await agent.handle_turn(request(user,'制冰机坏了'))
+    result=await agent.handle_turn(request(user,'热敏打单机坏了'))
     with pytest.raises(SessionOwnershipError):
-        await agent.handle_turn(request(user.model_copy(update={'roles':['finance']}),'不进水',result.session_id))
+        await agent.handle_turn(request(user.model_copy(update={'roles':['finance']}),'不出纸',result.session_id))
     with pytest.raises(SessionNotFoundError):
         await agent.handle_turn(request(user,session='missing'))
     model.delay=.01
-    results=await asyncio.gather(*(agent.handle_turn(request(user,'不进水',result.session_id)) for _ in range(2)),return_exceptions=True)
+    results=await asyncio.gather(*(agent.handle_turn(request(user,'不出纸',result.session_id)) for _ in range(2)),return_exceptions=True)
     assert sum(isinstance(r,SessionConflictError) for r in results)==1
     assert sum(isinstance(r,StoreAgentTurnResponse) for r in results)==1
 
@@ -195,7 +195,7 @@ async def test_cancellation(agent,user,monkeypatch):
 
 async def test_invoke_isolated_and_unsupported(agent,user,sessions):
     sessions.fail=RuntimeError('must not access sessions')
-    invocation=AgentInvocation(trace_id='test:q',scenario='store_sop',question='制冰机坏了',user_context=user)
+    invocation=AgentInvocation(trace_id='test:q',scenario='store_sop',question='热敏打单机坏了',user_context=user)
     result=await agent.invoke(invocation)
     assert result.retrieved_contexts==[]
     assert sessions.load_calls==sessions.save_calls==0
@@ -206,9 +206,9 @@ async def test_invoke_isolated_and_unsupported(agent,user,sessions):
 async def test_summary_failure_and_window(agent,user,model):
     from agent_matrix.store_sop.agent import _ConversationSummary
     agent.config=StoreAgentConfig(summary_trigger_turns=2,recent_turns_window=2)
-    one=await agent.handle_turn(request(user,'制冰机坏了'))
+    one=await agent.handle_turn(request(user,'热敏打单机坏了'))
     model.scripts[_ConversationSummary].append(RuntimeError('summary failure'))
-    two=await agent.handle_turn(request(user,'不进水',one.session_id))
+    two=await agent.handle_turn(request(user,'不出纸',one.session_id))
     assert two.stop_reason==StopReason.ANSWERED
     assert two.tool_traces[-1].step==LoopStep.SUMMARIZE and two.tool_traces[-1].status==ToolCallStatus.ERROR
     assert len((await agent.session_store.load(one.session_id)).recent_turns)==2
@@ -217,7 +217,7 @@ async def test_summary_failure_and_window(agent,user,model):
 async def test_ticket_and_summary_overlap(agent,user,model,tickets,monkeypatch):
     from agent_matrix.store_sop.agent import _ConversationSummary
     agent.config=StoreAgentConfig(summary_trigger_turns=2)
-    one=await agent.handle_turn(request(user,'制冰机坏了'))
+    one=await agent.handle_turn(request(user,'热敏打单机坏了'))
     original_model=model.generate_structured
     original_submit=tickets.submit
     summary_started,ticket_started=asyncio.Event(),asyncio.Event()
@@ -253,7 +253,7 @@ async def test_downstream_errors(agent,user,model,sessions,tickets,monkeypatch,b
     else:
         tickets.delay=.05
         agent.config=StoreAgentConfig(ticket_timeout_s=.01)
-        result=await agent.handle_turn(request(user,'制冰机有焦味'))
+        result=await agent.handle_turn(request(user,'热敏打单机有焦味'))
         assert result.ticket_receipt is None
 
 
@@ -265,15 +265,15 @@ async def test_store_ttl_cas_copy_and_ticket_idempotency(agent,user,sessions,tic
     with pytest.raises(SessionConflictError): await sessions.save(state,expected_version=None,ttl_s=60)
     sessions.expires['s']=0
     assert await sessions.load('s') is None
-    state=agent._merge_extraction(state,extraction('equipment_fault',equipment_model='制冰机',fault_symptom='不进水'))
+    state=agent._merge_extraction(state,extraction('equipment_fault',equipment_model='热敏打单机',fault_symptom='不出纸'))
     draft=agent._build_ticket_draft(state,safety_hazard=False,citations=[])
     a,b=await asyncio.gather(tickets.submit(draft),tickets.submit(draft))
     assert a.ticket_id==b.ticket_id
     assert {a.status,b.status}=={TicketStatus.CREATED,TicketStatus.DUPLICATE_OPEN}
 
 
-@pytest.mark.parametrize('answer',['45g [来源1]','柠檬片放45g [来源1]','柠檬片 -40g [来源1]',
-    '柠檬片 40G [来源1]','柠檬片 40 g [来源1]','柠檬片 40克 [来源1]','轻压6次 [来源1]'])
+@pytest.mark.parametrize('answer',['45g [来源1]','蛋白粉放45g [来源1]','蛋白粉 -40g [来源1]',
+    '蛋白粉 40G [来源1]','蛋白粉 40 g [来源1]','蛋白粉 40克 [来源1]','轻压6次 [来源1]'])
 async def test_numeric_verbatim_and_drink_row_scope(agent,user,model,answer):
     model.scripts[GroundedAnswerDraft].append(GroundedAnswerDraft(answer=answer,cited_context_indices=[1]))
     result=await agent.handle_turn(request(user))
@@ -287,13 +287,13 @@ async def test_quote_lineage_and_non_cited_numeric_source(agent,user):
         assert (citation.doc_id,citation.version)==(source.doc_id,source.version)
         assert citation.quote and citation.quote in source.full_content and len(citation.quote)<=200
     citations,trace=agent._verify_citations(GroundedAnswerDraft(answer='45g [来源1]',cited_context_indices=[1]),
-        contexts=[chunk(content='柠檬片40g'),chunk('other','other',content='草莓45g')])
+        contexts=[chunk(content='蛋白粉40g'),chunk('other','other',content='益生菌粉45g')])
     assert citations==[] and trace.status==ToolCallStatus.ERROR
 
 
 async def test_empty_equipment_evidence_escalates(agent,user):
     user=user.model_copy(update={'dept_id':'no_docs'})
-    result=await agent.handle_turn(request(user,'制冰机不进水'))
+    result=await agent.handle_turn(request(user,'热敏打单机不出纸'))
     assert result.stop_reason==StopReason.ESCALATED and result.escalation_ticket
     assert result.citations==[]
 
@@ -325,13 +325,13 @@ async def test_cancel_other_boundaries(agent,user,model,tickets,monkeypatch,boun
     session=None
     if boundary=='summary':
         agent.config=StoreAgentConfig(summary_trigger_turns=2)
-        one=await agent.handle_turn(request(user,'制冰机坏了'))
+        one=await agent.handle_turn(request(user,'热敏打单机坏了'))
         session=one.session_id
     if boundary=='decision': monkeypatch.setattr(model,'decide_tool_call',slow)
     if boundary=='ticket':
         async def submit(draft): await slow()
         monkeypatch.setattr(tickets,'submit',submit)
-    task=asyncio.create_task(agent.handle_turn(request(user,'制冰机有焦味' if boundary=='ticket' else request(user).message,session)))
+    task=asyncio.create_task(agent.handle_turn(request(user,'热敏打单机有焦味' if boundary=='ticket' else request(user).message,session)))
     await asyncio.wait_for(entered.wait(),1)
     task.cancel()
     with pytest.raises(asyncio.CancelledError): await task
@@ -355,10 +355,10 @@ async def test_long_eval_trace_and_reserved_session(agent,user):
 
 async def test_short_identity_does_not_corrupt_slot_schema(agent,user):
     user=user.model_copy(update={'user_id':'u'})
-    first=await agent.handle_turn(request(user,'制冰机坏了'))
-    second=await agent.handle_turn(request(user,'不进水',first.session_id))
+    first=await agent.handle_turn(request(user,'热敏打单机坏了'))
+    second=await agent.handle_turn(request(user,'不出纸',first.session_id))
     assert second.stop_reason==StopReason.ANSWERED
-    assert '确认进水阀开启' in second.answer
+    assert '确认纸仓无卡纸' in second.answer
 
 
 async def test_model_tool_arguments_cannot_override_identity(agent,user,model,monkeypatch):

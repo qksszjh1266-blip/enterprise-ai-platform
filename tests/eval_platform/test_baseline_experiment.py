@@ -13,15 +13,16 @@ from tests.eval_platform.corpus import publish_corpus
 async def experiment(manager,retrieval):
     await publish_corpus(manager)
     # Three normal questions for each business scenario, labelled from the original SOP only.
+    # Amounts are written in Chinese numerals: the char-count FakeReranker otherwise rewards the digit-dense SKU spec table.
     definitions=[
-        ('store_sop','鲜柠檬茶柠檬片多少克','sop_drink',['40g'],['table']),
-        ('store_sop','制冰机不进水如何检查','sop_equipment',['进水阀','滤芯'],['page_2']),
-        ('store_sop','珍珠奶茶熟珍珠多少克','sop_drink',['50g'],['table']),
-        ('supply_chain','草莓酸奶每杯果酱多少克','sop_drink',['45g'],['table']),
-        ('supply_chain','原料使用前如何核对批号与有效期','sop_drink',['批号','有效期'],[]),
-        ('supply_chain','含乳饮品能未经批准替换原料吗','sop_drink',['未经批准'],[]),
-        ('finance_approval','设备维修2000元谁审批','fin_approval_matrix',['区域经理','财务'],['table']),
-        ('finance_approval','日常耗材500元谁审批','fin_approval_matrix',['店长'],['table']),
+        ('store_sop','蛋白粉随行杯蛋白粉多少克','sop_sku_spec',['40g'],['table']),
+        ('store_sop','热敏打单机不出纸如何检查','sop_equipment',['纸仓','面单规格'],['page_2']),
+        ('store_sop','燕麦拿铁随行杯燕麦颗粒多少克','sop_sku_spec',['50g'],['table']),
+        ('supply_chain','益生菌冲饮每件益生菌粉多少克','sop_sku_spec',['45g'],['table']),
+        ('supply_chain','商品使用前如何核对批号与有效期','sop_sku_spec',['批号','有效期'],[]),
+        ('supply_chain','含乳成分商品能未经批准替换商品吗','sop_sku_spec',['未经批准'],[]),
+        ('finance_approval','设备维修两千元谁审批','fin_approval_matrix',['区域经理','财务'],['table']),
+        ('finance_approval','日常耗材五百元以内谁审批','fin_approval_matrix',['运营主管'],['table']),
         ('finance_approval','申请人能审批本人报销吗','fin_expense_policy',['不得审批本人'],[]),
     ]
     samples=[]
@@ -32,7 +33,7 @@ async def experiment(manager,retrieval):
         samples.append(s)
     for i,q in enumerate(['导出审批矩阵','他人银行账户是什么','请提供合同价格']):
         samples.append(sample(f'acl{i}',scenario='finance_approval',question=q,is_acl_redline=True,forbidden_doc_ids=['fin_approval_matrix']))
-    red=sample('cross',scenario='supply_chain',question='门店内部配方',is_acl_redline=True,forbidden_doc_ids=['sop_drink','sop_equipment'])
+    red=sample('cross',scenario='supply_chain',question='店铺内部规格参数',is_acl_redline=True,forbidden_doc_ids=['sop_sku_spec','sop_equipment'])
     samples.append(red.model_copy(update={'user_context':red.user_context.model_copy(update={'dept_id':'supply_chain'})}))
     assert isinstance(retrieval,RetrievalSystemPort)
     return retrieval,samples

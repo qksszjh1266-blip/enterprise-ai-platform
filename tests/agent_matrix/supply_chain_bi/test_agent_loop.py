@@ -11,7 +11,7 @@ from eval_platform.models import AgentInvocation, EvalScenario
 from .fakes import *
 from .sim_db import AS_OF, SENTINELS
 
-def request(question='近30天柠檬损耗率按仓库排', identity='mgr_east',alerts=False):
+def request(question='近30天益生菌粉损耗率按仓库排', identity='mgr_east',alerts=False):
     return SupplyChainQueryRequest(question=question,user_context=user(identity),as_of_date=AS_OF,include_alerts=alerts,trace_id='fixed-trace')
 
 async def test_14_loss_normal(make_agent):
@@ -65,11 +65,11 @@ async def test_21_read_only(make_agent,sandbox,caplog):
     assert caplog.records and not agent.sql_model.calls['repair_sql']
 
 async def test_22_sensitive_intent(make_agent):
-    agent=make_agent();r=await agent.analyze(request('柠檬采购底价是多少','proc_mgr',True))
+    agent=make_agent();r=await agent.analyze(request('益生菌粉采购底价是多少','proc_mgr',True))
     assert r.refusal_reason is RefusalReason.SENSITIVE_FIELD
     assert not agent.sql_model.calls['generate_sql'] and not agent.sandbox.calls
 
-@pytest.mark.parametrize('q',['全国各仓红茶库存','WH_S01 糖浆库存','华南各仓库存'])
+@pytest.mark.parametrize('q',['全国各仓速溶咖啡粉库存','WH_S01 风味液库存','华南各仓库存'])
 async def test_23_scope_intent(make_agent,q):
     agent=make_agent();r=await agent.analyze(request(q,'wh_sup_e01',True))
     assert r.refusal_reason is RefusalReason.SCOPE_VIOLATION
@@ -77,26 +77,26 @@ async def test_23_scope_intent(make_agent,q):
 
 @pytest.mark.parametrize('identity,expected',[('wh_sup_e01',{'WH_E01'}),('mgr_east',{'WH_E01','WH_E02','WH_E03'}),('hq_analyst',{'WH_E01','WH_E02','WH_E03','WH_S01','WH_S02'})])
 async def test_25_scope_rows(make_agent,identity,expected):
-    agent=make_agent();r=await agent.analyze(request('红茶还能撑几天',identity))
+    agent=make_agent();r=await agent.analyze(request('速溶咖啡粉还能撑几天',identity))
     assert {row[0] for row in r.result_table.rows}==expected
     assert all(c['bind_params']==scope_for(identity).bind_params(as_of_date=AS_OF) for c in agent.sandbox.calls)
 
 async def test_26_alerts(make_agent):
     r=await make_agent().analyze(request(alerts=True))
     alerts={(a.warehouse_id,a.material_id):a for a in r.alerts}
-    a=alerts['WH_E01','MAT_BLACK_TEA']
+    a=alerts['WH_E01','MAT_COFFEE']
     assert (a.severity,a.recommended_action,a.counterpart_warehouse_id,a.suggested_qty)==(AlertSeverity.P2,AlertAction.TRANSFER_IN,'WH_E03',36)
-    a=alerts['WH_E02','MAT_MILK_BASE']
+    a=alerts['WH_E02','MAT_MILK']
     assert (a.severity,a.recommended_action)==(AlertSeverity.P1,AlertAction.REPLENISH)
-    a=alerts['WH_E01','MAT_LEMON']
+    a=alerts['WH_E01','MAT_PROBIOTIC']
     assert (a.severity,a.alert_type,a.gap_qty,a.recommended_action)==(AlertSeverity.P1,AlertType.NEAR_EXPIRY_OVERSTOCK,50,AlertAction.TRANSFER_OUT)
-    assert alerts['WH_E02','MAT_PEARL'].recommended_action is AlertAction.INSPECT_AND_DISPOSE
+    assert alerts['WH_E02','MAT_OAT'].recommended_action is AlertAction.INSPECT_AND_DISPOSE
     assert all(a.warehouse_id.startswith('WH_E') for a in r.alerts)
     assert r.alerts==sorted(r.alerts,key=lambda a:(a.severity.value,a.alert_type.value,a.warehouse_id,a.material_id,a.batch_no or ''))
 
 async def test_27_alert_scope_shrink(make_agent):
     r=await make_agent().analyze(request(identity='wh_sup_e01',alerts=True))
-    a=next(a for a in r.alerts if a.material_id=='MAT_BLACK_TEA')
+    a=next(a for a in r.alerts if a.material_id=='MAT_COFFEE')
     assert a.recommended_action is AlertAction.REPLENISH
     assert all(a.counterpart_warehouse_id is None and a.warehouse_id=='WH_E01' for a in r.alerts)
 
@@ -114,7 +114,7 @@ async def test_29_alert_failure_isolated(make_agent,sandbox):
 
 @pytest.mark.parametrize('value,display,source',[(.075,'7.5%',NarrativeSource.TEMPLATE_FALLBACK),(.05,'5.0%',NarrativeSource.LLM_VERIFIED)])
 async def test_30_31_numeric_verification(make_agent,value,display,source):
-    draft=AnalysisNarrativeDraft(conclusion=f'WH_E01 柠檬损耗率 {display}',key_figures=[KeyFigure(label='损耗率',value=value,unit=MetricUnit.RATIO,row_index=0,column='loss_rate')])
+    draft=AnalysisNarrativeDraft(conclusion=f'WH_E01 益生菌粉损耗率 {display}',key_figures=[KeyFigure(label='损耗率',value=value,unit=MetricUnit.RATIO,row_index=0,column='loss_rate')])
     r=await make_agent(model=ScriptedSqlModel(narratives=[draft])).analyze(request())
     assert r.narrative_source is source
     assert '7.5' not in r.conclusion
@@ -127,7 +127,7 @@ async def test_32_clarification(make_agent):
 
 async def test_33_capped_result(make_agent):
     sql='SELECT s.store_id,s.cups_sold FROM fact_store_sales_daily s WHERE s.region_id=:scope_region_id ORDER BY s.store_id,s.biz_date,s.sku_id'
-    r=await make_agent(model=ScriptedSqlModel(candidates=[sql]),max_result_rows=5).analyze(request('门店销量'))
+    r=await make_agent(model=ScriptedSqlModel(candidates=[sql]),max_result_rows=5).analyze(request('店铺销量'))
     assert r.result_table.source_truncated and len(r.result_table.rows)==5
     assert TRUNCATION_NOTICE.format(max_rows=5) in r.conclusion
 

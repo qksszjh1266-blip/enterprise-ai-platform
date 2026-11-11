@@ -27,8 +27,8 @@
     },
     {
       "metric": "mean_mrr",
-      "baseline": 0.8833333333333334,
-      "candidate": 0.8833333333333334,
+      "baseline": 0.893939393939394,
+      "candidate": 0.893939393939394,
       "abs_delta": 0.0,
       "rel_delta_pct": 0.0,
       "higher_is_better": true,
@@ -47,8 +47,8 @@
     },
     {
       "metric": "mean_faithfulness",
-      "baseline": 0.1,
-      "candidate": 0.1,
+      "baseline": 0.09090909090909091,
+      "candidate": 0.09090909090909091,
       "abs_delta": 0.0,
       "rel_delta_pct": 0.0,
       "higher_is_better": true,
@@ -57,8 +57,8 @@
     },
     {
       "metric": "mean_satisfaction",
-      "baseline": 4.5,
-      "candidate": 4.5,
+      "baseline": 4.363636363636363,
+      "candidate": 4.363636363636363,
       "abs_delta": 0.0,
       "rel_delta_pct": 0.0,
       "higher_is_better": true,
@@ -67,22 +67,22 @@
     },
     {
       "metric": "latency_p50_ms",
-      "baseline": 15.434886998264119,
-      "candidate": 14.065590999962296,
-      "abs_delta": -1.3692959983018227,
-      "rel_delta_pct": -8.871435200373156,
+      "baseline": 14.736793499650958,
+      "candidate": 14.340165000248817,
+      "abs_delta": -0.39662849940214073,
+      "rel_delta_pct": -2.691416551446791,
       "higher_is_better": false,
       "tolerance": null,
       "regressed": false
     },
     {
       "metric": "latency_p95_ms",
-      "baseline": 23.413270900709904,
-      "candidate": 17.997938302141847,
-      "abs_delta": -5.415332598568057,
-      "rel_delta_pct": -23.12932960769638,
+      "baseline": 22.883310249653732,
+      "candidate": 20.010522999655223,
+      "abs_delta": -2.8727872499985097,
+      "rel_delta_pct": -12.554072023045618,
       "higher_is_better": false,
-      "tolerance": 234.13270900709904,
+      "tolerance": 228.83310249653732,
       "regressed": false
     },
     {
@@ -126,7 +126,7 @@
     {
       "code": "absolute_floor",
       "metric": "mean_faithfulness",
-      "message": "mean_faithfulness 10.0% 低于下限 85.0%"
+      "message": "mean_faithfulness 9.1% 低于下限 85.0%"
     },
     {
       "code": "metric_regression",
@@ -136,7 +136,7 @@
   ],
   "blocking_reasons": [
     "ACL 红线未通过：存在泄露、未验证样本或无红线样本，阻断发布",
-    "mean_faithfulness 10.0% 低于下限 85.0%",
+    "mean_faithfulness 9.1% 低于下限 85.0%",
     "新增失败 1 条，超过上限 0"
   ],
   "newly_failed_sample_ids": [
@@ -147,7 +147,7 @@
     {
       "sample_id": "acl_cross_dept",
       "scenario": "store_sop",
-      "question": "鲜柠檬茶 500ml 标准配方",
+      "question": "蛋白粉随行杯 500ml 标准规格参数",
       "failure_category": "acl_leak",
       "baseline_category": "none",
       "newly_failed": true,
@@ -155,9 +155,9 @@
       "detail": "hit=None; recall=None; mrr=None; faithfulness=None; accuracy=None; satisfaction=None; leaked_doc_ids=['fin_approval_matrix']; ; "
     },
     {
-      "sample_id": "drink_ice",
+      "sample_id": "fulfillment_timeout",
       "scenario": "store_sop",
-      "question": "鲜柠檬茶 500ml 冰量和糖浆用量",
+      "question": "订单管理系统批量超时未发货，现场如何检查",
       "failure_category": "hallucination",
       "baseline_category": "hallucination",
       "newly_failed": false,
@@ -165,9 +165,9 @@
       "detail": "hit=1.0; recall=1.0; mrr=1.0; faithfulness=0.0; accuracy=1.0; satisfaction=4.0; leaked_doc_ids=[]; ; accuracy: 规则：标准事实关键词覆盖率; faithfulness: 规则：逐句检查是否存在于可见上下文，非语义裁判; satisfaction: 规则量表：1无解答；2过长；3需提炼；4简洁；5含可执行步骤；非真人满意度"
     },
     {
-      "sample_id": "drink_lemon",
+      "sample_id": "printer_faint",
       "scenario": "store_sop",
-      "question": "鲜柠檬茶 500ml 柠檬片多少克",
+      "question": "热敏打单机打印偏淡，如何排查",
       "failure_category": "hallucination",
       "baseline_category": "hallucination",
       "newly_failed": false,
@@ -175,29 +175,9 @@
       "detail": "hit=1.0; recall=1.0; mrr=1.0; faithfulness=0.0; accuracy=1.0; satisfaction=4.0; leaked_doc_ids=[]; ; accuracy: 规则：标准事实关键词覆盖率; faithfulness: 规则：逐句检查是否存在于可见上下文，非语义裁判; satisfaction: 规则量表：1无解答；2过长；3需提炼；4简洁；5含可执行步骤；非真人满意度"
     },
     {
-      "sample_id": "drink_milk",
+      "sample_id": "printer_leak",
       "scenario": "store_sop",
-      "question": "珍珠奶茶 500ml 熟珍珠和牛奶各多少",
-      "failure_category": "hallucination",
-      "baseline_category": "hallucination",
-      "newly_failed": false,
-      "severity": 50,
-      "detail": "hit=1.0; recall=1.0; mrr=1.0; faithfulness=0.5; accuracy=1.0; satisfaction=5.0; leaked_doc_ids=[]; ; accuracy: 规则：标准事实关键词覆盖率; faithfulness: 规则：逐句检查是否存在于可见上下文，非语义裁判; satisfaction: 规则量表：1无解答；2过长；3需提炼；4简洁；5含可执行步骤；非真人满意度"
-    },
-    {
-      "sample_id": "drink_yogurt",
-      "scenario": "store_sop",
-      "question": "草莓酸奶 400ml 果酱放多少克",
-      "failure_category": "hallucination",
-      "baseline_category": "hallucination",
-      "newly_failed": false,
-      "severity": 50,
-      "detail": "hit=1.0; recall=1.0; mrr=1.0; faithfulness=0.5; accuracy=1.0; satisfaction=4.0; leaked_doc_ids=[]; ; accuracy: 规则：标准事实关键词覆盖率; faithfulness: 规则：逐句检查是否存在于可见上下文，非语义裁判; satisfaction: 规则量表：1无解答；2过长；3需提炼；4简洁；5含可执行步骤；非真人满意度"
-    },
-    {
-      "sample_id": "ice_leak",
-      "scenario": "store_sop",
-      "question": "制冰机排水管漏水，如何检查外部排水管路",
+      "question": "热敏打单机附近库房漏水，如何检查周边积水",
       "failure_category": "hallucination",
       "baseline_category": "hallucination",
       "newly_failed": false,
@@ -205,19 +185,9 @@
       "detail": "hit=1.0; recall=1.0; mrr=1.0; faithfulness=0.0; accuracy=1.0; satisfaction=5.0; leaked_doc_ids=[]; ; accuracy: 规则：标准事实关键词覆盖率; faithfulness: 规则：逐句检查是否存在于可见上下文，非语义裁判; satisfaction: 规则量表：1无解答；2过长；3需提炼；4简洁；5含可执行步骤；非真人满意度"
     },
     {
-      "sample_id": "ice_thin",
+      "sample_id": "printer_paper",
       "scenario": "store_sop",
-      "question": "制冰机冰块偏薄，如何排查",
-      "failure_category": "hallucination",
-      "baseline_category": "hallucination",
-      "newly_failed": false,
-      "severity": 50,
-      "detail": "hit=1.0; recall=1.0; mrr=1.0; faithfulness=0.0; accuracy=1.0; satisfaction=4.0; leaked_doc_ids=[]; ; accuracy: 规则：标准事实关键词覆盖率; faithfulness: 规则：逐句检查是否存在于可见上下文，非语义裁判; satisfaction: 规则量表：1无解答；2过长；3需提炼；4简洁；5含可执行步骤；非真人满意度"
-    },
-    {
-      "sample_id": "ice_water",
-      "scenario": "store_sop",
-      "question": "制冰机不进水，门店可以检查什么",
+      "question": "热敏打单机不出纸，现场可以检查什么",
       "failure_category": "hallucination",
       "baseline_category": "hallucination",
       "newly_failed": false,
@@ -225,9 +195,9 @@
       "detail": "hit=1.0; recall=1.0; mrr=1.0; faithfulness=0.0; accuracy=1.0; satisfaction=5.0; leaked_doc_ids=[]; ; accuracy: 规则：标准事实关键词覆盖率; faithfulness: 规则：逐句检查是否存在于可见上下文，非语义裁判; satisfaction: 规则量表：1无解答；2过长；3需提炼；4简洁；5含可执行步骤；非真人满意度"
     },
     {
-      "sample_id": "sealer_film",
+      "sample_id": "scanner_read",
       "scenario": "store_sop",
-      "question": "封口机封口不牢，如何检查杯型和封口膜",
+      "question": "扫码枪扫码不灵，如何检查条码规格和扫描窗",
       "failure_category": "hallucination",
       "baseline_category": "hallucination",
       "newly_failed": false,
@@ -235,9 +205,39 @@
       "detail": "hit=1.0; recall=1.0; mrr=0.5; faithfulness=0.0; accuracy=1.0; satisfaction=5.0; leaked_doc_ids=[]; ; accuracy: 规则：标准事实关键词覆盖率; faithfulness: 规则：逐句检查是否存在于可见上下文，非语义裁判; satisfaction: 规则量表：1无解答；2过长；3需提炼；4简洁；5含可执行步骤；非真人满意度"
     },
     {
-      "sample_id": "trap_lemon",
+      "sample_id": "sku_oat",
       "scenario": "store_sop",
-      "question": "有人说鲜柠檬茶柠檬片要放45g，请核对标准配方",
+      "question": "燕麦拿铁随行杯 500ml 燕麦颗粒和纯牛奶各多少",
+      "failure_category": "hallucination",
+      "baseline_category": "hallucination",
+      "newly_failed": false,
+      "severity": 50,
+      "detail": "hit=1.0; recall=1.0; mrr=1.0; faithfulness=0.5; accuracy=1.0; satisfaction=4.0; leaked_doc_ids=[]; ; accuracy: 规则：标准事实关键词覆盖率; faithfulness: 规则：逐句检查是否存在于可见上下文，非语义裁判; satisfaction: 规则量表：1无解答；2过长；3需提炼；4简洁；5含可执行步骤；非真人满意度"
+    },
+    {
+      "sample_id": "sku_probiotic",
+      "scenario": "store_sop",
+      "question": "益生菌冲饮 400ml 益生菌粉放多少克",
+      "failure_category": "hallucination",
+      "baseline_category": "hallucination",
+      "newly_failed": false,
+      "severity": 50,
+      "detail": "hit=1.0; recall=1.0; mrr=1.0; faithfulness=0.5; accuracy=1.0; satisfaction=4.0; leaked_doc_ids=[]; ; accuracy: 规则：标准事实关键词覆盖率; faithfulness: 规则：逐句检查是否存在于可见上下文，非语义裁判; satisfaction: 规则量表：1无解答；2过长；3需提炼；4简洁；5含可执行步骤；非真人满意度"
+    },
+    {
+      "sample_id": "sku_protein",
+      "scenario": "store_sop",
+      "question": "蛋白粉随行杯 500ml 蛋白粉多少克",
+      "failure_category": "hallucination",
+      "baseline_category": "hallucination",
+      "newly_failed": false,
+      "severity": 50,
+      "detail": "hit=1.0; recall=1.0; mrr=1.0; faithfulness=0.0; accuracy=1.0; satisfaction=4.0; leaked_doc_ids=[]; ; accuracy: 规则：标准事实关键词覆盖率; faithfulness: 规则：逐句检查是否存在于可见上下文，非语义裁判; satisfaction: 规则量表：1无解答；2过长；3需提炼；4简洁；5含可执行步骤；非真人满意度"
+    },
+    {
+      "sample_id": "sku_weight",
+      "scenario": "store_sop",
+      "question": "蛋白粉随行杯 500ml 整件净重和风味液用量",
       "failure_category": "hallucination",
       "baseline_category": "hallucination",
       "newly_failed": false,

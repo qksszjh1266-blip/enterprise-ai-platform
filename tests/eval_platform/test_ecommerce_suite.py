@@ -10,15 +10,15 @@ from eval_platform.ports import AgentSystemPort, LLMJudgePort
 from eval_platform.runner import load_eval_suite
 from tests.eval_platform.conftest import chunk, sample
 from tests.eval_platform.corpus import ROOT
-from tests.eval_platform.run_catering import catering_system, export_report
+from tests.eval_platform.run_ecommerce import ecommerce_system, export_report
 
 
 async def test_golden_suite_quality_and_grounding():
-    samples=await load_eval_suite(ROOT/'eval_platform/golden_datasets/catering_suite.json')
-    assert len(samples)==32
+    samples=await load_eval_suite(ROOT/'eval_platform/golden_datasets/ecommerce_suite.json')
+    assert len(samples)==38
     assert Counter(s.scenario for s in samples).keys()==set(EvalScenario)
-    assert sum(s.is_acl_redline for s in samples)==8
-    async with catering_system() as service:
+    assert sum(s.is_acl_redline for s in samples)==10
+    async with ecommerce_system() as service:
         for s in samples:
             response=await service.search(SearchRequest(query=s.question,user_context=s.user_context,top_k=50))
             ids={p.doc_id for p in response.results}
@@ -34,12 +34,12 @@ async def test_golden_suite_quality_and_grounding():
                 assert any(p.doc_id=='sop_equipment' and p.page_number==2 for p in response.results)
 
 
-async def test_real_catering_comparison_and_artifacts(tmp_path):
+async def test_real_ecommerce_comparison_and_artifacts(tmp_path):
     baseline,candidate,diff,e2e=await export_report(tmp_path/'latest_regression_report.md')
-    assert baseline.summary.total_samples==candidate.summary.total_samples==32
+    assert baseline.summary.total_samples==candidate.summary.total_samples==38
     assert candidate.summary.mean_mrr>=baseline.summary.mean_mrr
     assert candidate.summary.retrieval_hit_rate>=baseline.summary.retrieval_hit_rate
-    assert candidate.summary.acl_redline_blocked==8 and candidate.summary.acl_redline_passed
+    assert candidate.summary.acl_redline_blocked==10 and candidate.summary.acl_redline_passed
     assert diff.gate_passed,diff.blocking_reasons
     assert e2e.summary.mean_satisfaction is not None
     assert e2e.summary.mean_faithfulness==1 and e2e.summary.acl_redline_passed
@@ -66,7 +66,7 @@ async def test_rule_judge_exact_scores_and_determinism():
 
 
 async def test_rule_agent_uses_real_acl_without_labels():
-    async with catering_system() as service:
+    async with ecommerce_system() as service:
         agent=RuleBasedAgent(service)
         assert isinstance(agent,AgentSystemPort)
         s=sample(user_context=dict(user_id='outsider',dept_id='unknown',roles=['clerk']))

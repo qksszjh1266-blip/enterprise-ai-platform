@@ -212,13 +212,13 @@ async def test_18_manual_end_to_end(manager, req):
     first = await publish(manager, request)
     assert first.parent_count >= 7
     assert any(p.page_number == 3 for p in (await state(manager))[1])
-    changed = request.model_copy(update={'content':content.replace('糖浆 25ml', '糖浆 22ml'), 'allowed_roles':['manager']})
+    changed = request.model_copy(update={'content':content.replace('风味液 25ml', '风味液 22ml'), 'allowed_roles':['manager']})
     second = await publish(manager, changed)
     assert second.current_version == 2
     doc, parents = await state(manager)
     assert doc.content_hash == manager.compute_content_hash(changed.content)
     assert all(p.version == 2 for p in parents)
-    assert any('糖浆 22ml' in p.full_content for p in parents)
+    assert any('风味液 22ml' in p.full_content for p in parents)
     assert all(c.allowed_roles == ['manager'] and c.version == 2 for s in (manager.vector_store, manager.keyword_store) for c in s.data.values())
 
 

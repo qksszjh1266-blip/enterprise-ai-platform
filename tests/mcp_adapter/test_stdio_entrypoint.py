@@ -26,7 +26,7 @@ async def test_stdio_server_serves_tools_with_injected_identity():
     async with Client(params) as client:
         names = {t.name for t in (await client.list_tools()).tools}
         allowed = await client.call_tool("search_enterprise_knowledge",
-                                         {"query": "制冰机不出冰", "department": "store_ops", "role": "clerk"})
+                                         {"query": "热敏打单机不出纸", "department": "store_ops", "role": "clerk"})
         denied = await client.call_tool("search_enterprise_knowledge",
                                         {"query": "审批矩阵", "department": "store_ops", "role": "store_manager"})
     assert names == {"search_enterprise_knowledge", "list_supply_chain_metrics"}

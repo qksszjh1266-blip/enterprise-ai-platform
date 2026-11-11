@@ -7,7 +7,7 @@ from .sim_db import AS_OF
 
 def test_06_match_and_filter():
     s=SemanticLayer()
-    assert [m.metric_id for m in s.match_metrics('近30天柠檬报损率')]==['material_loss_rate']
+    assert [m.metric_id for m in s.match_metrics('近30天益生菌粉报损率')]==['material_loss_rate']
     assert [m.metric_id for m in s.match_metrics('还能撑几天')]==['days_of_supply']
     assert s.filter_metric_ids(['bad','days_of_supply','days_of_supply'])==['days_of_supply']
     assert s.get_table('DIM_MATERIAL').table_name=='dim_material'

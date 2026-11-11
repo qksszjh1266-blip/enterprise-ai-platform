@@ -4,25 +4,25 @@ import { badge, empty, errorNotice, identityText, kv, metric, ms, notice, person
 
 const EXPENSE = `单据类型：报销单
 单据编号：EXP-20261105-001
-门店编码：ST_0101
+店铺编码：ST_0101
 申请人：store_clerk_01 | store_ops | store_clerk
 提交时间：2026-11-05 10:00
-报销事由：门店日常清洁耗材采购
-发票：INV20261104001 | 增值税普通发票 | 2026-11-04 | 杭州清洁用品有限公司 | 91330100MA12345678
-明细：日常耗材 | 清洁用品 | 2 | 件 | 100.00 | 0.13 | INV20261104001 | 2026-11-04
+报销事由：仓库日常打包耗材采购
+发票：INV20261104001 | 增值税普通发票 | 2026-11-04 | 杭州示例包装材料有限公司 | 91330100MA12345678
+明细：日常耗材 | 快递纸箱 | 2 | 件 | 100.00 | 0.13 | INV20261104001 | 2026-11-04
 附件：发票、采购清单、验收记录
 申报总额：226.00`;
 const OVER_LIMIT = EXPENSE.replace('EXP-20261105-001', 'EXP-20261105-002').replace('| 2 | 件 | 100.00', '| 3 | 件 | 200.00').replace('申报总额：226.00', '申报总额：678.01');
 const WITH_PII = EXPENSE.replace('EXP-20261105-001', 'EXP-20261105-003')
-  .replace('门店日常清洁耗材采购', '门店耗材采购，经办人手机 13800138000，身份证 11010519491231002X，垫付卡 6222020200112233446')
+  .replace('仓库日常打包耗材采购', '打包耗材采购，经办人手机 13800138000，身份证 11010519491231002X，垫付卡 6222020200112233446')
   .replace('申报总额', '收款账户：6222020200112233446\n申报总额');
 const CONTRACT = `单据类型：合同
 合同编号：CTR-20261105-001
-合同类型：加盟采购
-合同名称：华东门店物料年度采购合同
-门店编码：ST_0101
+合同类型：物流配送
+合同名称：华东区域仓储与干线物流服务合同
+店铺编码：ST_0101
 申请人：store_manager_01 | store_ops | store_manager
-相对方：杭州示例供应链有限公司 | 91330100MA12345678 | 13800138000 | 6222020200112233446
+相对方：杭州示例仓配物流有限公司 | 91330100MA12345678 | 13800138000 | 6222020200112233446
 标的额：80000.00
 税率：0.13
 账期天数：60
@@ -36,13 +36,13 @@ const CONTRACT = `单据类型：合同
 附件：合同
 提交时间：2026-11-05 10:00`;
 const CASES = [
-  { label: '常规门店报销合规放行', kind: 'positive', persona: 'finance_clerk', text: EXPENSE },
+  { label: '常规店铺报销合规放行', kind: 'positive', persona: 'finance_clerk', text: EXPENSE },
   { label: '超标金额触发 Decimal 规则拦截', kind: 'security', persona: 'finance_clerk', text: OVER_LIMIT },
   { label: '含手机号/身份证/银行卡触发 PII 自动脱敏与人工审批工单', kind: 'security', persona: 'finance_clerk', text: WITH_PII },
 ];
 const ROUTE = { AUTO_APPROVE: ['good', '预审通过，进入常规审批'], NEEDS_SUPPLEMENT: ['warn', '退回补正'], ESCALATE_HUMAN: ['warn', '规则拦截，转人工复核'], REJECT: ['bad', '驳回'] };
 const RISK = { LOW: 'info', MEDIUM: 'warn', HIGH: 'bad', CRITICAL: 'bad' };
-const TIER = { store_manager: '店长', regional_manager: '区域经理', regional_manager_and_finance: '区域经理及财务', regional_head_and_finance_head: '区域负责人及财务负责人', legal_and_finance_head: '法务及财务负责人' };
+const TIER = { store_manager: '运营主管', regional_manager: '区域经理', regional_manager_and_finance: '区域经理及财务', regional_head_and_finance_head: '区域负责人及财务负责人', legal_and_finance_head: '法务及财务负责人' };
 const SOURCE = { rule_engine: 'Decimal 规则', model_review: '语义审查', system_guard: '系统兜底' };
 const PII = { bank_card: '银行卡', id_card: '身份证', mobile_phone: '手机号' };
 const STAGE = { redact: '脱敏', ledger_lookup: '台账查询', retrieve_policy: '制度检索', rule_check: '规则校验', model_review: '语义审查', route: '路由合成', escalate: '生成工单' };

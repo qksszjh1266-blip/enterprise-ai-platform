@@ -7,7 +7,7 @@
 - 裸 SQL 执行 / SQL dry-run 校验：守卫与行级范围只能在服务端闭环内生效；dry-run 会形成
   "敏感列 vs 不存在列"的存在性探测预言机（SENSITIVE_COLUMN 与 COLUMN_NOT_WHITELISTED 可区分）。
 
-身份注入：与 门店 SOP store_sop.api 相同——网关注入 `X-User-Id` / `X-Dept-Id` / `X-User-Roles`（逗号分隔），
+身份注入：与 电商运营 SOP store_sop.api 相同——网关注入 `X-User-Id` / `X-Dept-Id` / `X-User-Roles`（逗号分隔），
 get_trusted_user_context 据此构造 UserContext 并**覆盖** SupplyChainQueryPayload.user_context；三个头都缺失时
 仅在 app.state.allow_body_identity=True（内网调试）下回退使用请求体，否则 401。行级范围（WarehouseScopeFilter）
 永远由 WarehouseScopeResolverPort 基于 UserContext 解析，请求体与头部均不得直接携带 region / warehouse 范围。
@@ -112,7 +112,7 @@ def get_trusted_user_context(request: Request, body_user_context: UserContext | 
     operation_id="supply_chain_bi_analyze",
     summary="供应链库存预警与经营分析（自然语言 → 受控只读 SQL）",
     description=(
-        "用自然语言询问库存、安全库存缺口、效期周转、原料损耗率、门店杯量等指标。"
+        "用自然语言询问库存、安全库存缺口、效期周转、商品货损率、SKU 销量等指标。"
         "结果严格限定在调用者授权的大区 / 仓库范围内；采购底价等敏感字段不可查询。"
         "stop_reason=clarification_requested 时 conclusion 为追问；refused=true 时 conclusion 为拒答说明；"
         "alerts 为规则引擎生成的补货 / 调拨 / 临期处置建议；final_sql 为脱敏后的最终执行 SQL。"
@@ -175,7 +175,7 @@ def create_app(agent: SupplyChainBIAgent | None = None, *, allow_body_identity: 
     app = FastAPI(
         title="Supply Chain BI Agent API",
         version="0.4.0",
-        description="餐饮供应链库存预警与自然语言经营分析：语义层受控 Text-to-SQL、行级大区 / 仓库权限、只读沙箱执行。",
+        description="电商供应链库存预警与自然语言经营分析：语义层受控 Text-to-SQL、行级大区 / 仓库权限、只读沙箱执行。",
     )
     app.state.supply_chain_bi_agent = agent
     app.state.allow_body_identity = allow_body_identity

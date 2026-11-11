@@ -97,8 +97,8 @@ def build_dashboard() -> dict[str, Any]:
     finance_agent, finance_gates, finance_injected = parse_finance_report(FINANCE_REPORT.read_text(encoding="utf-8"))
     agents = [
         _agent("retrieval", "知识检索端到端", retrieval),
-        _agent("store_sop", "门店 SOP 督导", sop, "忠实度偏低源于固定规则裁判不识别引用标记与拒答模板，并非模型幻觉率，原始分保留。"),
-        _agent("supply_chain_bi", "供应链经营分析", bi),
+        _agent("store_sop", "电商运营 SOP 与工单协同", sop, "忠实度偏低源于固定规则裁判不识别引用标记与拒答模板，并非模型幻觉率，原始分保留。"),
+        _agent("supply_chain_bi", "经营分析与进销存预警", bi),
         finance_agent,
     ]
     gates = [

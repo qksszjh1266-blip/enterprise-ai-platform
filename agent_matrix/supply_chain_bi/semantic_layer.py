@@ -1,4 +1,4 @@
-"""餐饮供应链语义层目录。
+"""电商供应链语义层目录。
 
 两部分：
 1. SUPPLY_CHAIN_CATALOG：语义字典**配置**（完整可用，接口契约）。物理表结构与 tests/agent_matrix/supply_chain_bi/schema.sql 中的模拟库一致。
@@ -65,28 +65,28 @@ DIM_WAREHOUSE = TableSchemaSpec(
 
 DIM_STORE = TableSchemaSpec(
     table_name="dim_store",
-    display_name="门店维表",
-    description="门店主数据及其配送仓归属",
-    grain="门店",
+    display_name="店铺维表",
+    description="店铺主数据及其配送仓归属",
+    grain="店铺",
     columns=[
-        C(name="store_id", data_type=T.STRING, description="门店编码", is_dimension=True),
-        C(name="store_name", data_type=T.STRING, description="门店名称", is_dimension=True),
+        C(name="store_id", data_type=T.STRING, description="店铺编码", is_dimension=True),
+        C(name="store_name", data_type=T.STRING, description="店铺名称", is_dimension=True),
         C(name="region_id", data_type=T.STRING, description="所属大区编码", is_dimension=True),
         C(name="warehouse_id", data_type=T.STRING, description="配送仓编码", is_dimension=True),
         C(name="city", data_type=T.STRING, description="城市", is_dimension=True),
-        C(name="store_tier", data_type=T.STRING, description="门店等级 A/B/C", is_dimension=True),
+        C(name="store_tier", data_type=T.STRING, description="店铺等级 A/B/C", is_dimension=True),
     ],
     sensitive_columns=["franchisee_phone"],
 )
 
 DIM_MATERIAL = TableSchemaSpec(
     table_name="dim_material",
-    display_name="原料维表",
-    description="原料 / 包材主数据（全局共享，无行级范围）",
-    grain="原料",
+    display_name="商品维表",
+    description="商品 / 包材主数据（全局共享，无行级范围）",
+    grain="商品",
     columns=[
-        C(name="material_id", data_type=T.STRING, description="原料编码", is_dimension=True),
-        C(name="material_name", data_type=T.STRING, description="原料名称，如 柠檬 / 珍珠 / 冰淇淋粉", is_dimension=True),
+        C(name="material_id", data_type=T.STRING, description="商品编码", is_dimension=True),
+        C(name="material_name", data_type=T.STRING, description="商品名称，如 速溶咖啡粉 / 益生菌粉 / 快递纸箱", is_dimension=True),
         C(name="category", data_type=T.STRING, description="fresh / frozen / dry / packaging", is_dimension=True),
         C(name="base_unit", data_type=T.STRING, description="计量单位，如 kg / 箱 / 袋", is_dimension=True),
         C(name="shelf_life_days", data_type=T.INTEGER, description="标准保质期天数"),
@@ -99,17 +99,17 @@ DIM_MATERIAL = TableSchemaSpec(
 
 FACT_STORE_SALES_DAILY = TableSchemaSpec(
     table_name="fact_store_sales_daily",
-    display_name="门店日销量",
-    description="门店×饮品 SKU×日 的销量与零售营收",
-    grain="门店×SKU×日",
+    display_name="店铺日销量",
+    description="店铺×商品 SKU×日 的销量（件）与零售营收",
+    grain="店铺×SKU×日",
     columns=[
         C(name="biz_date", data_type=T.DATE, description="营业日期", is_dimension=True),
-        C(name="store_id", data_type=T.STRING, description="门店编码", is_dimension=True),
+        C(name="store_id", data_type=T.STRING, description="店铺编码", is_dimension=True),
         C(name="region_id", data_type=T.STRING, description="大区编码", is_dimension=True),
         C(name="warehouse_id", data_type=T.STRING, description="配送仓编码", is_dimension=True),
-        C(name="sku_id", data_type=T.STRING, description="饮品 SKU 编码", is_dimension=True),
-        C(name="sku_name", data_type=T.STRING, description="饮品名称", is_dimension=True),
-        C(name="cups_sold", data_type=T.INTEGER, description="售出杯数", unit="杯"),
+        C(name="sku_id", data_type=T.STRING, description="商品 SKU 编码", is_dimension=True),
+        C(name="sku_name", data_type=T.STRING, description="商品名称", is_dimension=True),
+        C(name="cups_sold", data_type=T.INTEGER, description="售出件数", unit="件"),
         C(name="net_revenue", data_type=T.DECIMAL, description="零售净营收（元）", unit="元"),
     ],
     sensitive_columns=["sku_standard_cost"],
@@ -119,16 +119,16 @@ FACT_STORE_SALES_DAILY = TableSchemaSpec(
 FACT_WAREHOUSE_INVENTORY_DAILY = TableSchemaSpec(
     table_name="fact_warehouse_inventory_daily",
     display_name="仓库日库存快照",
-    description="仓库×原料×日 的日终库存、在途、占用、安全库存与出库",
-    grain="仓库×原料×日",
+    description="仓库×商品×日 的日终库存、在途、占用、安全库存与出库",
+    grain="仓库×商品×日",
     columns=[
         C(name="snapshot_date", data_type=T.DATE, description="快照日期（日终）", is_dimension=True),
         C(name="region_id", data_type=T.STRING, description="大区编码", is_dimension=True),
         C(name="warehouse_id", data_type=T.STRING, description="仓库编码", is_dimension=True),
-        C(name="material_id", data_type=T.STRING, description="原料编码", is_dimension=True),
+        C(name="material_id", data_type=T.STRING, description="商品编码", is_dimension=True),
         C(name="on_hand_qty", data_type=T.DECIMAL, description="在库量"),
         C(name="in_transit_qty", data_type=T.DECIMAL, description="采购 / 调拨在途量"),
-        C(name="reserved_qty", data_type=T.DECIMAL, description="已被门店订单占用量"),
+        C(name="reserved_qty", data_type=T.DECIMAL, description="已被平台订单锁定量"),
         C(name="safety_stock_qty", data_type=T.DECIMAL, description="安全库存量（计划系统下发）"),
         C(name="outbound_qty", data_type=T.DECIMAL, description="当日出库量"),
         C(name="avg_daily_outbound_7d", data_type=T.DECIMAL, description="近 7 日日均出库量（含当日）"),
@@ -147,7 +147,7 @@ FACT_INVENTORY_BATCH = TableSchemaSpec(
         C(name="batch_no", data_type=T.STRING, description="批次号", is_dimension=True),
         C(name="region_id", data_type=T.STRING, description="大区编码", is_dimension=True),
         C(name="warehouse_id", data_type=T.STRING, description="仓库编码", is_dimension=True),
-        C(name="material_id", data_type=T.STRING, description="原料编码", is_dimension=True),
+        C(name="material_id", data_type=T.STRING, description="商品编码", is_dimension=True),
         C(name="supplier_id", data_type=T.STRING, description="供应商编码（不含价格）", is_dimension=True),
         C(name="production_date", data_type=T.DATE, description="生产日期"),
         C(name="expiry_date", data_type=T.DATE, description="到期日期"),
@@ -161,14 +161,14 @@ FACT_INVENTORY_BATCH = TableSchemaSpec(
 
 FACT_MATERIAL_LOSS = TableSchemaSpec(
     table_name="fact_material_loss",
-    display_name="原料损耗明细",
-    description="仓库原料报损记录（过期 / 破损 / 温控异常 / 其他）",
+    display_name="商品货损明细",
+    description="仓库商品报损记录（过期 / 破损 / 温控异常 / 其他）",
     grain="报损单行",
     columns=[
         C(name="loss_date", data_type=T.DATE, description="报损日期", is_dimension=True),
         C(name="region_id", data_type=T.STRING, description="大区编码", is_dimension=True),
         C(name="warehouse_id", data_type=T.STRING, description="仓库编码", is_dimension=True),
-        C(name="material_id", data_type=T.STRING, description="原料编码", is_dimension=True),
+        C(name="material_id", data_type=T.STRING, description="商品编码", is_dimension=True),
         C(name="batch_no", data_type=T.STRING, description="批次号", is_dimension=True),
         C(name="loss_qty", data_type=T.DECIMAL, description="报损量"),
         C(name="loss_reason", data_type=T.STRING, description="expired / damaged / temperature / other", is_dimension=True),
@@ -183,11 +183,11 @@ FACT_MATERIAL_LOSS = TableSchemaSpec(
 
 MATERIAL_LOSS_RATE = MetricDefinition(
     metric_id="material_loss_rate",
-    display_name="原料损耗率",
-    aliases=["损耗率", "报损率", "损耗占比", "原料浪费率"],
+    display_name="商品货损率",
+    aliases=["损耗率", "报损率", "损耗占比", "货损率"],
     calculation_caliber=(
         "统计期内 报损量 ÷ (出库量 + 报损量)。报损量取 fact_material_loss.loss_qty（全部原因），"
-        "出库量取 fact_warehouse_inventory_daily.outbound_qty；两表须先分别按 仓库×原料 聚合再关联，"
+        "出库量取 fact_warehouse_inventory_daily.outbound_qty；两表须先分别按 仓库×商品 聚合再关联，"
         "禁止明细直接 JOIN 导致重复计数；分母为 0 记为 NULL。统计期缺省为基准日前 30 天（含基准日）。"
     ),
     formula_sql="SUM(l.loss_qty) / NULLIF(SUM(i.outbound_qty) + SUM(l.loss_qty), 0)",
@@ -231,7 +231,7 @@ SHELF_LIFE_TURNOVER_DAYS = MetricDefinition(
     display_name="效期周转天数",
     aliases=["效期周转", "批次消化天数", "临期周转", "多久能用完"],
     calculation_caliber=(
-        "批次维度：预计消化天数 = 批次剩余量 ÷ 所在仓该原料近 7 日日均出库量；"
+        "批次维度：预计消化天数 = 批次剩余量 ÷ 所在仓该商品近 7 日日均出库量；"
         "剩余效期天数 = expiry_date − :as_of_date。预计消化天数 > 剩余效期天数 即存在临期积压风险。"
         "日均出库为 0 时消化天数记为 NULL（视为无法消化）。仅取 snapshot_date = :as_of_date 的批次与库存快照。"
     ),
@@ -288,8 +288,8 @@ NEAR_EXPIRY_QTY = MetricDefinition(
 
 STORE_CUPS_SOLD = MetricDefinition(
     metric_id="store_cups_sold",
-    display_name="门店杯量",
-    aliases=["销量", "出杯量", "卖了多少杯"],
+    display_name="SKU 销量",
+    aliases=["销量", "出库件数", "卖了多少件"],
     calculation_caliber="统计期内 fact_store_sales_daily.cups_sold 合计；统计期缺省为基准日前 7 天（含基准日）。",
     formula_sql="SUM(s.cups_sold)",
     unit=MetricUnit.CUPS,
@@ -323,7 +323,7 @@ ALERT_INVENTORY_POSITION = AlertQueryTemplate(
         "available_qty", "safety_stock_qty", "avg_daily_outbound_7d",
     ],
 )
-"""返回范围内**全部**仓×原料库存位置（不只缺口行），规则引擎据此同时判定跌破与寻找授权范围内的富余调出仓。"""
+"""返回范围内**全部**仓×商品库存位置（不只缺口行），规则引擎据此同时判定跌破与寻找授权范围内的富余调出仓。"""
 
 ALERT_NEAR_EXPIRY_BATCHES = AlertQueryTemplate(
     template_id="alert_near_expiry_batches",
@@ -354,7 +354,7 @@ ALERT_NEAR_EXPIRY_BATCHES = AlertQueryTemplate(
 # ---------------------------------------------------------------------------
 
 SUPPLY_CHAIN_CATALOG = SemanticCatalogSpec(
-    catalog_version=1,
+    catalog_version=2,
     dialect=SqlDialect.SQLITE,
     tables=[
         DIM_WAREHOUSE, DIM_STORE, DIM_MATERIAL,

@@ -111,7 +111,7 @@ class TracingSearch:
 
 
 # ---------------------------------------------------------------------------
-# 门店 SOP
+# 电商运营 SOP
 # ---------------------------------------------------------------------------
 
 
@@ -166,8 +166,8 @@ SCOPE_TABLE: dict[str, tuple[ScopeLevel, str | None, list[str]]] = {
 REGION_NAMES = {"华东": "R_EAST", "华南": "R_SOUTH", "华北": "R_NORTH", "西南": "R_WEST"}
 _SQL_ATTACK = re.compile(r"\b(?:select|with|drop|update|delete|insert|alter|attach|pragma|truncate|create)\b[\s\S]*", re.I)
 _SQL_WRITE = re.compile(r"\b(?:drop|update|delete|insert|alter|attach|pragma|truncate|create)\b|;\s*\S|\bfrom\b", re.I)
-_SENSITIVE_TERMS = ("采购底价", "合同价", "进货价", "供应商报价", "返利", "毛利底表", "加盟商手机")
-_OUT_OF_SCOPE_TERMS = ("报销", "薪酬", "配方", "制冰机", "天气")
+_SENSITIVE_TERMS = ("采购底价", "合同价", "进货价", "供应商报价", "返利", "毛利底表", "合作商手机")
+_OUT_OF_SCOPE_TERMS = ("报销", "薪酬", "规格参数", "热敏打单机", "天气")
 
 
 class DemoScopeResolver:
@@ -222,7 +222,7 @@ class DemoSqlModel:
             asks_national_view="全国" in question or "全集团" in question,
             mentioned_region_ids=[r for name, r in REGION_NAMES.items() if name in question],
             mentioned_warehouse_ids=re.findall(r"\bWH_[A-Z]\d{2}\b", question),
-            clarification_question=None if metric_ids else "请说明要分析的指标，例如原料损耗率、安全库存缺口或库存可供天数。"))
+            clarification_question=None if metric_ids else "请说明要分析的指标，例如商品货损率、安全库存缺口或库存可供天数。"))
 
     async def generate_sql(self, *, question: str, intent: AnalysisIntent, context) -> SqlModelResult[SqlCandidate]:
         embedded = self._embedded_sql(question)
@@ -256,7 +256,7 @@ class DemoSqlModel:
                 f"1.0 * l.loss_qty / NULLIF(o.outbound_qty + l.loss_qty, 0) AS loss_rate "
                 f"FROM losses l JOIN outbound o ON o.{key} = l.{key} AND o.material_id = l.material_id "
                 f"JOIN dim_material m ON m.material_id = l.material_id ORDER BY loss_rate DESC")
-        if metric == "days_of_supply" and "门店" in question:
+        if metric == "days_of_supply" and "店铺" in question:
             days = f"{available} / NULLIF(i.avg_daily_outbound_7d, 0)"
             return (
                 f"SELECT s.store_id, s.store_name, i.warehouse_id, m.material_name, {days} AS days_of_supply "
@@ -344,7 +344,7 @@ class DemoFinanceModel:
         placeholder = next((m.group() for t in texts if (m := _PLACEHOLDER.search(t))), None)
         if parent is not None and personal:
             claims.append(ModelRiskClaim(code=ViolationCode.PERSONAL_CONSUMPTION_SUSPECTED, risk_level=RiskLevel.HIGH,
-                rationale="事由描述疑似个人消费，与门店经营用途不符。", evidence_excerpt=personal[:200],
+                rationale="事由描述疑似个人消费，与店铺经营用途不符。", evidence_excerpt=personal[:200],
                 citation_parent_id=parent.parent_id, citation_quote=quote))
         if parent is not None and placeholder:
             claims.append(ModelRiskClaim(code=ViolationCode.PERSONAL_CONSUMPTION_SUSPECTED, risk_level=RiskLevel.HIGH,

@@ -33,7 +33,7 @@ from web_console.llm_settings import LlmSettings
 
 ROOT = Path(__file__).resolve().parents[1]
 MOCK_DOCS = ROOT / "mock_docs"
-CONTRACT_POLICY = Path(__file__).with_name("demo_data") / "franchise_contract_policy.md"
+CONTRACT_POLICY = Path(__file__).with_name("demo_data") / "supplier_contract_policy.md"
 SIMULATED_TABLES = 9
 # 智能体的模型预算略大于网关超时，使超时优先由适配器报告明确原因。
 AGENT_TIMEOUT_MARGIN_SECONDS = 2.0
@@ -68,16 +68,16 @@ class MemoryIndex:
 def _corpus() -> list[tuple[str, str, str, str, list[str]]]:
     """返回 (doc_id, 标题, 正文, 部门, 角色)，权限划分与评测语料一致。"""
     manual = (MOCK_DOCS / "store_sop_manual.md").read_text(encoding="utf-8")
-    drink = manual.split("## 饮品出品标准", 1)[1].split("<!-- page: 2 -->", 1)[0]
+    spec = manual.split("## 商品规格参数标准", 1)[1].split("<!-- page: 2 -->", 1)[0]
     equipment = manual.split("## 设备巡检与维护", 1)[1].split("<!-- page: 3 -->", 1)[0]
-    policy, matrix = manual.split("## 门店费用报销权限", 1)[1].split("### 审批矩阵与数据可见范围", 1)
+    policy, matrix = manual.split("## 运营费用报销权限", 1)[1].split("### 审批矩阵与数据可见范围", 1)
     staff = ["clerk", "store_manager"]
     docs = [
-        ("sop_drink", "饮品出品标准", "## 饮品出品标准" + drink, "store_ops", staff),
+        ("sop_sku_spec", "商品规格参数标准", "## 商品规格参数标准" + spec, "store_ops", staff),
         ("sop_equipment", "设备巡检与维护", "<!-- page: 2 -->\n## 设备巡检与维护" + equipment, "store_ops", staff),
-        ("fin_expense_policy", "门店费用报销权限", "<!-- page: 3 -->\n## 门店费用报销权限" + policy, "store_ops", [*staff, "finance"]),
+        ("fin_expense_policy", "运营费用报销权限", "<!-- page: 3 -->\n## 运营费用报销权限" + policy, "store_ops", [*staff, "finance"]),
         ("fin_approval_matrix", "审批矩阵与数据可见范围", "<!-- page: 3 -->\n### 审批矩阵与数据可见范围" + matrix, "store_ops", ["store_manager", "finance"]),
-        ("sop_sealer", "封口机培训资料", (MOCK_DOCS / "store_sop_sealer_training.md").read_text(encoding="utf-8"), "store_ops", staff),
+        ("sop_scanner", "扫码枪培训资料", (MOCK_DOCS / "store_sop_scanner_training.md").read_text(encoding="utf-8"), "store_ops", staff),
     ]
     supply = ["warehouse", "supply_manager", "hq_supply_analyst"]
     finance = ["finance", "finance_manager"]

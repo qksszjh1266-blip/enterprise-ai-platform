@@ -21,29 +21,29 @@ WAREHOUSES = [
     ("WH_W02", "重庆前置仓", "R_WEST", "西南", "front"),
 ]
 MATERIALS = [
-    ("MAT_BLACK_TEA", "红茶", "dry", "kg", 365, "ambient", 60, 20),
-    ("MAT_SYRUP", "糖浆", "dry", "L", 180, "ambient", 90, 30),
-    ("MAT_MILK_BASE", "奶基底", "fresh", "L", 30, "chilled", 120, 40),
-    ("MAT_LEMON", "柠檬", "fresh", "kg", 14, "chilled", 40, 12),
-    ("MAT_PEARL", "珍珠", "dry", "kg", 90, "ambient", 50, 15),
+    ("MAT_COFFEE", "速溶咖啡粉", "dry", "kg", 365, "ambient", 60, 20),
+    ("MAT_FLAVOR", "风味液", "dry", "L", 180, "ambient", 90, 30),
+    ("MAT_MILK", "纯牛奶", "fresh", "L", 30, "chilled", 120, 40),
+    ("MAT_PROBIOTIC", "益生菌粉", "fresh", "kg", 14, "chilled", 40, 12),
+    ("MAT_OAT", "燕麦颗粒", "dry", "kg", 90, "ambient", 50, 15),
 ]
 REGION_LOSS_FACTOR = {"R_EAST": 16, "R_SOUTH": 10, "R_NORTH": 7, "R_WEST": 13}
 LOSS_REASONS = ("expired", "damaged", "temperature", "other")
-SKUS = (("SKU_LEMON_TEA", "鲜柠檬茶", 100), ("SKU_MILK_TEA", "珍珠奶茶", 80))
-# (仓库, 原料) -> (在库, 在途, 占用)：刻意构造的断货风险与积压样本。
+SKUS = (("SKU_PROTEIN_CUP", "蛋白粉随行杯", 100), ("SKU_OAT_CUP", "燕麦拿铁随行杯", 80))
+# (仓库, 商品) -> (在库, 在途, 占用)：刻意构造的断货风险与积压样本。
 INVENTORY_OVERRIDES = {
-    ("WH_E01", "MAT_BLACK_TEA"): (20, 10, 6),
-    ("WH_E02", "MAT_MILK_BASE"): (30, 0, 0),
-    ("WH_E03", "MAT_BLACK_TEA"): (900, 0, 0),
-    ("WH_S01", "MAT_SYRUP"): (10, 0, 0),
-    ("WH_N02", "MAT_PEARL"): (640, 20, 0),
-    ("WH_W01", "MAT_LEMON"): (18, 0, 4),
+    ("WH_E01", "MAT_COFFEE"): (20, 10, 6),
+    ("WH_E02", "MAT_MILK"): (30, 0, 0),
+    ("WH_E03", "MAT_COFFEE"): (900, 0, 0),
+    ("WH_S01", "MAT_FLAVOR"): (10, 0, 0),
+    ("WH_N02", "MAT_OAT"): (640, 20, 0),
+    ("WH_W01", "MAT_PROBIOTIC"): (18, 0, 4),
 }
-# (仓库, 原料) -> (批次号, 到期日, 剩余量, 生产日)：临期积压样本。
+# (仓库, 商品) -> (批次号, 到期日, 剩余量, 生产日)：临期积压样本。
 BATCH_OVERRIDES = {
-    ("WH_E01", "MAT_LEMON"): ("B_LEMON_1027", date(2026, 11, 4), 80, date(2026, 10, 21)),
-    ("WH_E02", "MAT_PEARL"): ("B_PEARL_0801", date(2026, 10, 31), 5, date(2026, 8, 2)),
-    ("WH_W02", "MAT_MILK_BASE"): ("B_MILK_1006", date(2026, 11, 6), 260, date(2026, 10, 7)),
+    ("WH_E01", "MAT_PROBIOTIC"): ("B_PROBIO_1027", date(2026, 11, 4), 80, date(2026, 10, 21)),
+    ("WH_E02", "MAT_OAT"): ("B_OAT_0801", date(2026, 10, 31), 5, date(2026, 8, 2)),
+    ("WH_W02", "MAT_MILK"): ("B_MILK_1006", date(2026, 11, 6), 260, date(2026, 10, 7)),
 }
 
 
@@ -86,7 +86,7 @@ async def seed_supply_chain_database(path: Path) -> Path:
         await db.executemany("INSERT INTO fact_warehouse_inventory_daily VALUES (?,?,?,?,?,?,?,?,?,?,?)", inventory)
         await db.executemany("INSERT INTO fact_inventory_batch VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", batches)
         await db.executemany("INSERT INTO fact_material_loss VALUES (?,?,?,?,?,?,?,?,?)", losses)
-        await db.execute("INSERT INTO dim_supplier_contract VALUES ('SUP_01','MAT_LEMON',13.5,0.03,'CONTRACT_01')")
+        await db.execute("INSERT INTO dim_supplier_contract VALUES ('SUP_01','MAT_PROBIOTIC',13.5,0.03,'CONTRACT_01')")
         await db.execute("INSERT INTO fin_purchase_settlement VALUES ('SETTLE_01','SUP_01',91.5,'2026-10')")
         await db.commit()
     return path

@@ -8,13 +8,13 @@ ROOT = Path(__file__).resolve().parents[2]
 
 def split_manual(text):
     # Preserve source page markers when promoting sections to separate documents.
-    drink = text.split('## 饮品出品标准', 1)[1].split('<!-- page: 2 -->', 1)[0]
+    spec = text.split('## 商品规格参数标准', 1)[1].split('<!-- page: 2 -->', 1)[0]
     equipment = text.split('## 设备巡检与维护', 1)[1].split('<!-- page: 3 -->', 1)[0]
-    policy, matrix = text.split('## 门店费用报销权限', 1)[1].split('### 审批矩阵与数据可见范围', 1)
+    policy, matrix = text.split('## 运营费用报销权限', 1)[1].split('### 审批矩阵与数据可见范围', 1)
     return [
-        ('sop_drink', '## 饮品出品标准'+drink, 'store_ops', ['clerk','store_manager']),
+        ('sop_sku_spec', '## 商品规格参数标准'+spec, 'store_ops', ['clerk','store_manager']),
         ('sop_equipment', '<!-- page: 2 -->\n## 设备巡检与维护'+equipment, 'store_ops', ['clerk','store_manager']),
-        ('fin_expense_policy', '<!-- page: 3 -->\n## 门店费用报销权限'+policy, 'store_ops', ['clerk','store_manager','finance']),
+        ('fin_expense_policy', '<!-- page: 3 -->\n## 运营费用报销权限'+policy, 'store_ops', ['clerk','store_manager','finance']),
         ('fin_approval_matrix', '<!-- page: 3 -->\n### 审批矩阵与数据可见范围'+matrix, 'store_ops', ['store_manager','finance']),
     ]
 

@@ -48,7 +48,7 @@ async def test_13_expanding(sandbox,paren):
     assert await sandbox.latest_snapshot_date()==AS_OF
 
 async def test_seed_exact_totals(sandbox):
-    r=await execute(sandbox,"SELECT warehouse_id,SUM(outbound_qty) FROM fact_warehouse_inventory_daily WHERE material_id='MAT_LEMON' GROUP BY warehouse_id")
+    r=await execute(sandbox,"SELECT warehouse_id,SUM(outbound_qty) FROM fact_warehouse_inventory_daily WHERE material_id='MAT_PROBIOTIC' GROUP BY warehouse_id")
     assert dict(r.rows)['WH_E01']==285
     assert dict(r.rows)['WH_E02']==196
     r=await execute(sandbox,'SELECT COUNT(*) FROM fact_warehouse_inventory_daily')

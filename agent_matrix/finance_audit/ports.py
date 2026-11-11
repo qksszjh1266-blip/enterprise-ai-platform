@@ -4,7 +4,7 @@
 - ClaimHistoryLedgerPort     历史报销 / 合同台账：重复发票检测、滚动窗口拆单 / 拆分合同检测、按引用加载单据
 - HumanApprovalGatewayPort   人工复核工单（财务主管 / 法务审批流）
 
-制度条款检索不在此重复定义：直接复用 eval_platform.ports.RetrievalSystemPort（与 门店 SOP store_sop 相同；
+制度条款检索不在此重复定义：直接复用 eval_platform.ports.RetrievalSystemPort（与 电商运营 SOP store_sop 相同；
 数据中台 HybridRetrievalService 原样满足，ACL 由数据中台前置过滤）。
 
 单元测试注入离线确定性替身；生产注入真实大模型 / 费控系统台账 / OA 审批流适配器。
@@ -106,7 +106,7 @@ class ClaimHistoryLedgerPort(Protocol):
         """返回这些发票号在其他单据中的全部占用记录（含 REJECTED / WITHDRAWN，由规则引擎按状态判定）。
 
         - 发票号比较前统一 NFKC + 去空白 + 大写；invoice_nos 为空返回 []。
-        - 必须跨申请人、跨门店查询（同一发票被他人报销同样构成重复）。
+        - 必须跨申请人、跨店铺查询（同一发票被他人报销同样构成重复）。
         """
         ...
 
@@ -120,7 +120,7 @@ class ClaimHistoryLedgerPort(Protocol):
         window_end: datetime,
         exclude_claim_id: str,
     ) -> list[HistoricalClaimRecord]:
-        """滚动窗口 [window_start, window_end] 内同一申请人、同一门店、类别 ∈ categories 的历史报销单（拆单检测）。"""
+        """滚动窗口 [window_start, window_end] 内同一申请人、同一店铺、类别 ∈ categories 的历史报销单（拆单检测）。"""
         ...
 
     async def list_recent_contracts(

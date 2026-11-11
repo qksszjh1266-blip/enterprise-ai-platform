@@ -3,23 +3,23 @@ import { errorOf, post } from '../core/api.js';
 import { badge, empty, errorNotice, identityText, kv, ms, notice, personaSelect, quickbar, section } from '../core/ui.js';
 
 const CASES = [
-  { label: '标准饮品制作查询', kind: 'positive', persona: 'store_clerk', messages: ['鲜柠檬茶 500ml 的标准配方和操作要求是什么？'] },
-  { label: '制冰机不制冰多轮排障', kind: 'positive', persona: 'store_clerk', messages: ['制冰机不制冰了，应该怎么排查？', '现象是不进水'] },
-  { label: '排障超限自动转人工报修工单', kind: 'security', persona: 'store_clerk', messages: ['店里的机器出问题了', '是制冰机', '不进水，设备编号 ICE-008'] },
+  { label: '标准商品规格参数查询', kind: 'positive', persona: 'store_clerk', messages: ['蛋白粉随行杯 500ml 的标准规格参数和操作要求是什么？'] },
+  { label: '热敏打单机不出纸多轮排障', kind: 'positive', persona: 'store_clerk', messages: ['热敏打单机出故障了，应该怎么排查？', '现象是不出纸'] },
+  { label: '排障超限自动转人工报修工单', kind: 'security', persona: 'store_clerk', messages: ['仓库的打单机器出问题了', '是热敏打单机', '不出纸，设备编号 PRT-008'] },
 ];
 const STOP = {
   answered: ['good', '已回答'], clarification_requested: ['info', '追问补槽'], escalated: ['warn', '已转人工报修'],
   refused: ['bad', '拒答'], max_steps_reached: ['warn', '步数超限兜底'], retrieval_unavailable: ['warn', '知识库不可用'],
 };
 const STEP = { intent_slot: '意图与槽位', decide: '动作决策', clarify: '追问', retrieve: '混合检索', generate: '生成回答', verify_citations: '引用核验', escalate: '提交工单', refuse: '拒答', summarize: '摘要压缩', persist: '持久化' };
-const SLOTS = { equipment_model: '设备类型', equipment_id: '设备编号', fault_symptom: '故障现象', attempted_checks: '已做检查', drink_name: '饮品名称' };
+const SLOTS = { equipment_model: '设备类型', equipment_id: '设备编号', fault_symptom: '故障现象', attempted_checks: '已做检查', drink_name: '商品名称' };
 
 export function createSop(ctx) {
   const state = { persona: 'store_clerk', sessionId: null, ownerPersona: null, last: null, script: [], step: 0, busy: false };
   const personaOf = () => ctx.personas.find((p) => p.persona_id === state.persona);
 
-  const log = h('div', { class: 'chat-log', 'aria-live': 'polite' }, empty('选择上方用例，或直接提问门店饮品与设备问题。'));
-  const input = h('textarea', { class: 'input', rows: 2, placeholder: '输入门店问题，Enter 发送，Shift+Enter 换行', 'aria-label': '门店问题',
+  const log = h('div', { class: 'chat-log', 'aria-live': 'polite' }, empty('选择上方用例，或直接提问商品规格、售后规则、仓配设备与履约异常问题。'));
+  const input = h('textarea', { class: 'input', rows: 2, placeholder: '输入电商运营问题，Enter 发送，Shift+Enter 换行', 'aria-label': '电商运营问题',
     onkeydown: (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } } });
   const sendButton = h('button', { class: 'btn primary', type: 'button', onclick: () => send() }, '发送');
   const scriptBar = h('div', { class: 'chat-script', hidden: true });
@@ -108,9 +108,9 @@ export function createSop(ctx) {
   function renderDrawer() {
     const persona = personaOf();
     const base = section('网关身份', kv([['人员', persona.label], ['可信头', identityText(persona), true]]));
-    if (!state.last) return ctx.drawer('门店 SOP', [base, empty('发送消息后展示引用、槽位与状态轨迹。')]);
+    if (!state.last) return ctx.drawer('电商运营 SOP', [base, empty('发送消息后展示引用、槽位与状态轨迹。')]);
     if (state.last.error) {
-      return ctx.drawer('门店 SOP', [base, section('拦截详情', kv([['HTTP', state.last.status], ['错误码', state.last.error.error_code, true], ['trace_id', state.last.trace_id, true]]))]);
+      return ctx.drawer('电商运营 SOP', [base, section('拦截详情', kv([['HTTP', state.last.status], ['错误码', state.last.error.error_code, true], ['trace_id', state.last.trace_id, true]]))]);
     }
     const { response: r, session, trace_id: traceId } = state.last;
     const slots = session?.slots || {};
@@ -129,7 +129,7 @@ export function createSop(ctx) {
 
   const root = h('div', { class: 'module' }, quickbar(CASES, pick),
     h('div', { class: 'card chat-card' },
-      h('div', { class: 'chat-toolbar' }, h('span', { class: 'muted' }, '门店员工身份'), select, sessionLabel, h('span', { style: 'flex:1' }), h('button', { class: 'btn', type: 'button', onclick: reset }, '重置会话')),
+      h('div', { class: 'chat-toolbar' }, h('span', { class: 'muted' }, '一线员工身份'), select, sessionLabel, h('span', { style: 'flex:1' }), h('button', { class: 'btn', type: 'button', onclick: reset }, '重置会话')),
       log, scriptBar, h('div', { class: 'composer' }, input, sendButton)));
   return { root, renderDrawer };
 }

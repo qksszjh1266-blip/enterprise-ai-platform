@@ -1,4 +1,4 @@
-"""门店 SOP 智能体数据模型与传输契约。
+"""电商运营 SOP 智能体数据模型与传输契约。
 
 本模块仅包含 Pydantic V2 模型、枚举与策略常量，不含任何 I/O：
 
@@ -55,11 +55,11 @@ from eval_platform.models import TokenUsage
 
 
 class StoreIntent(str, enum.Enum):
-    """门店侧提问意图。"""
+    """运营侧提问意图。"""
 
-    DRINK_SOP = "drink_sop"  # 饮品配方 / 出品标准（严禁幻觉，数值必须逐字来自上下文）
+    DRINK_SOP = "drink_sop"  # 商品规格参数 / 售后规则（严禁幻觉，数值必须逐字来自上下文）
     EQUIPMENT_FAULT = "equipment_fault"  # 设备故障排查（缺信息先追问，失败转报修）
-    STORE_OPS_GENERAL = "store_ops_general"  # 开店检查、交接、食安等通用门店运营
+    STORE_OPS_GENERAL = "store_ops_general"  # 开仓检查、交接、质量安全等通用电商运营
     OUT_OF_SCOPE = "out_of_scope"  # 跨部门 / 越权领域（审批矩阵、他人账户、合同价格、薪酬等）
     SMALL_TALK = "small_talk"  # 寒暄 / 与业务无关，不检索
 
@@ -67,11 +67,11 @@ class StoreIntent(str, enum.Enum):
 class SlotName(str, enum.Enum):
     """可提取槽位（与 ExtractedSlots 字段名一一对应）。"""
 
-    EQUIPMENT_MODEL = "equipment_model"  # 设备类型 / 型号，如"制冰机"、"ICE-XX 系列"
-    EQUIPMENT_ID = "equipment_id"  # 设备编号，如 ICE-008（报修必填，可在追问后补录）
-    FAULT_SYMPTOM = "fault_symptom"  # 故障现象，如"不进水"、"异响或焦味"
-    ATTEMPTED_CHECKS = "attempted_checks"  # 门店已执行的检查项
-    DRINK_NAME = "drink_name"  # 饮品名称，如"鲜柠檬茶"
+    EQUIPMENT_MODEL = "equipment_model"  # 设备类型 / 型号，如"热敏打单机"、"PRT-XX 系列"
+    EQUIPMENT_ID = "equipment_id"  # 设备编号，如 PRT-008（报修必填，可在追问后补录）
+    FAULT_SYMPTOM = "fault_symptom"  # 故障现象，如"不出纸"、"异响或焦味"
+    ATTEMPTED_CHECKS = "attempted_checks"  # 现场已执行的检查项
+    DRINK_NAME = "drink_name"  # 商品名称，如"蛋白粉随行杯"
 
 
 REQUIRED_SLOTS_BY_INTENT: dict[StoreIntent, tuple[SlotName, ...]] = {
@@ -125,7 +125,7 @@ class RefusalReason(str, enum.Enum):
 
     CROSS_DEPT = "cross_dept"  # 跨部门 / 越权提问
     NO_EVIDENCE = "no_evidence"  # 有权限范围内检索无依据
-    OUT_OF_SCOPE = "out_of_scope"  # 非门店运营业务
+    OUT_OF_SCOPE = "out_of_scope"  # 非电商运营业务
 
 
 class ToolCallStatus(str, enum.Enum):
@@ -136,8 +136,8 @@ class ToolCallStatus(str, enum.Enum):
 
 
 class TicketSeverity(str, enum.Enum):
-    P1_SAFETY = "p1_safety"  # 焦味 / 冒烟 / 漏水接近电源等人身与食安风险
-    P2_BUSINESS_BLOCKING = "p2_business_blocking"  # 影响出品（如制冰机停机）
+    P1_SAFETY = "p1_safety"  # 焦味 / 冒烟 / 漏水接近电源等人身与质量安全风险
+    P2_BUSINESS_BLOCKING = "p2_business_blocking"  # 影响出库（如热敏打单机停机）
     P3_GENERAL = "p3_general"
 
 
@@ -217,7 +217,7 @@ class SopCitation(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     doc_id: str = Field(..., max_length=128)
-    section_path: str = Field(..., description="标题层级路径，如「连锁餐饮门店运营手册 > 设备巡检与维护 > 制冰机故障排查表」")
+    section_path: str = Field(..., description="标题层级路径，如「电商自营商品与仓配运营手册 > 设备巡检与维护 > 热敏打单机故障排查表」")
     version: int = Field(..., ge=1, description="引用时的 current_version，便于发现引用过期")
     parent_id: str = Field(..., max_length=192)
     page_number: int | None = Field(default=None, ge=1)
@@ -225,7 +225,7 @@ class SopCitation(BaseModel):
 
 
 class RepairTicketDraft(BaseModel):
-    """设备排障失败 / 安全隐患时转人工督导与报修的工单草稿。"""
+    """设备排障失败 / 安全隐患时转人工运维与报修的工单草稿。"""
 
     model_config = ConfigDict(frozen=True, extra="forbid", str_strip_whitespace=True)
 
@@ -239,8 +239,8 @@ class RepairTicketDraft(BaseModel):
     attempted_checks: list[str] = Field(default_factory=list)
     severity: TicketSeverity
     safety_hazard: bool = False
-    immediate_actions: list[str] = Field(default_factory=list, description="SOP 要求门店立即执行的措施，如断电、贴停用标识")
-    summary: str = Field(..., max_length=1000, description="给督导 / 维保的故障摘要")
+    immediate_actions: list[str] = Field(default_factory=list, description="SOP 要求现场立即执行的措施，如断电、贴停用标识")
+    summary: str = Field(..., max_length=1000, description="给运维主管 / 维保的故障摘要")
     sop_citations: list[SopCitation] = Field(default_factory=list)
     created_at: datetime
 
@@ -258,7 +258,7 @@ class TicketReceipt(BaseModel):
 
     ticket_id: str = Field(..., min_length=1, max_length=128)
     status: TicketStatus
-    assignee_role: str | None = Field(default=None, description="如 区域督导 / 授权维保")
+    assignee_role: str | None = Field(default=None, description="如 仓配运维主管 / 授权维保")
     created_at: datetime
 
 
@@ -294,7 +294,7 @@ class ToolCallDecision(BaseModel):
 
     tool_name: str
     arguments: dict[str, Any] = Field(default_factory=dict)
-    reason: str = Field(default="", max_length=500, description="决策理由，进入 tool_traces，不展示给门店用户")
+    reason: str = Field(default="", max_length=500, description="决策理由，进入 tool_traces，不展示给运营用户")
 
 
 class ChatModelResult(BaseModel, Generic[T]):

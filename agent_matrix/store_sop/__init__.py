@@ -1,1 +1,1 @@
-"""门店 SOP 督导智能体：models / ports / prompts / agent / api / errors。"""
+"""电商运营 SOP智能体：models / ports / prompts / agent / api / errors。"""

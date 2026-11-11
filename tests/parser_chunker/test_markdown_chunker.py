@@ -29,9 +29,9 @@ def test_page_and_preamble():
 
 
 def test_large_parents_atomic_blocks():
-    table = '| 名称 | 数值 |\n| --- | --- |\n| 茶 | 20 |'
+    table = '| 名称 | 数值 |\n| --- | --- |\n| 纸箱 | 20 |'
     code = '```\n# example\n\nprint(1)\n```'
-    result = chunk('# A\n' + ('配方。'*10+'\n\n')*10 + table+'\n\n'+code, parent_max_chars=100, child_max_chars=40, child_overlap_chars=8)
+    result = chunk('# A\n' + ('规格参数。'*10+'\n\n')*10 + table+'\n\n'+code, parent_max_chars=100, child_max_chars=40, child_overlap_chars=8)
     assert all(len(p.full_content) <= 100 for p in result.parents)
     assert sum(table in p.full_content for p in result.parents) == 1
     assert sum(code in p.full_content for p in result.parents) == 1

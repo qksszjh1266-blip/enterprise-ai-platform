@@ -12,13 +12,13 @@ from agent_matrix.store_sop.prompts import (
 from mcp_server.prompts import MAX_EVIDENCE_ITEMS, render_sop_citation_qa
 
 EVIDENCE = [
-    {"section_path": "饮品出品标准/鲜柠檬茶", "page_number": 1, "content": "杯型 500ml，茶汤 300ml。"},
-    {"section_path": "饮品出品标准/过敏原", "content": "含乳饮品须提示过敏原。"},
+    {"section_path": "商品规格参数标准/蛋白粉随行杯", "page_number": 1, "content": "规格 500ml，饮用水 300ml。"},
+    {"section_path": "商品规格参数标准/过敏原", "content": "含乳成分商品须提示过敏原。"},
 ]
 
 
 def _render(**overrides):
-    args = {"question": "鲜柠檬茶怎么做？", "evidence": json.dumps(EVIDENCE, ensure_ascii=False)} | overrides
+    args = {"question": "蛋白粉随行杯怎么做？", "evidence": json.dumps(EVIDENCE, ensure_ascii=False)} | overrides
     return render_sop_citation_qa(**args)
 
 
@@ -29,9 +29,9 @@ def test_renders_rules_then_numbered_evidence_and_question():
     assert CROSS_DEPT_REFUSAL_POLICY in rules.content.text
     assert "1 至 2" in rules.content.text
     body = context.content.text
-    assert "[来源1] 章节：饮品出品标准/鲜柠檬茶（第 1 页）\n杯型 500ml，茶汤 300ml。" in body
-    assert "[来源2] 章节：饮品出品标准/过敏原\n含乳饮品须提示过敏原。" in body
-    assert body.rstrip().endswith("用户问题：鲜柠檬茶怎么做？")
+    assert "[来源1] 章节：商品规格参数标准/蛋白粉随行杯（第 1 页）\n规格 500ml，饮用水 300ml。" in body
+    assert "[来源2] 章节：商品规格参数标准/过敏原\n含乳成分商品须提示过敏原。" in body
+    assert body.rstrip().endswith("用户问题：蛋白粉随行杯怎么做？")
 
 
 def test_scenario_selects_store_sop_rule_blocks():
@@ -45,10 +45,10 @@ def test_scenario_selects_store_sop_rule_blocks():
 
 def test_accepts_full_search_tool_output_and_inherits_degraded_flag():
     payload = {"query": "q", "degraded": True, "evidence": [
-        {"rank": 1, "section_path": "设备/制冰机", "content": "停机断电。", "source": {"doc_id": "d", "version": 1, "page_number": 2}}]}
+        {"rank": 1, "section_path": "设备/热敏打单机", "content": "停机断电。", "source": {"doc_id": "d", "version": 1, "page_number": 2}}]}
     rules, context = _render(evidence=json.dumps(payload, ensure_ascii=False))
     assert render_degraded_notice([]) in rules.content.text
-    assert "[来源1] 章节：设备/制冰机（第 2 页）" in context.content.text
+    assert "[来源1] 章节：设备/热敏打单机（第 2 页）" in context.content.text
     assert "doc_id" not in context.content.text
 
 

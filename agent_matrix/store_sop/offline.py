@@ -94,13 +94,13 @@ class InMemoryTicketPort:
             if draft.idempotency_key in self.receipts:
                 return self.receipts[draft.idempotency_key].model_copy(update={"status": TicketStatus.DUPLICATE_OPEN})
             receipt = TicketReceipt(ticket_id="OFFLINE-" + hashlib.sha256(draft.idempotency_key.encode()).hexdigest()[:16],
-                status=TicketStatus.CREATED, assignee_role="区域督导", created_at=datetime.now(timezone.utc))
+                status=TicketStatus.CREATED, assignee_role="仓配运维主管", created_at=datetime.now(timezone.utc))
             self.receipts[draft.idempotency_key] = receipt
             return receipt
 
 
 class OfflineChatModel:
-    """Extract exact source rows; optionally change lemon 40g to 45g for fault injection."""
+    """Extract exact source rows; optionally change protein powder 40g to 45g for fault injection."""
 
     def __init__(self, *, tamper_numbers: bool = False):
         self.tamper_numbers = tamper_numbers
@@ -149,10 +149,11 @@ class OfflineChatModel:
         if any(k in question for k in ("审批", "银行账户", "合同价格", "薪酬", "财务", "采购底价", "供应商价格")):
             intent = "out_of_scope"
         else:
-            equipment = next((k for k in ("制冰机", "封口机", "冷藏柜") if k in question), None)
-            drink = next((k for k in ("鲜柠檬茶", "珍珠奶茶", "草莓酸奶") if k in question), None)
-            symptoms = [k for k in ("不进水", "冰块偏薄", "漏水", "异响", "焦味", "冒烟", "封口不牢", "不加热", "漏电", "火花") if k in question]
-            if drink or "饮品" in question or "配方" in question:
+            equipment = next((k for k in ("热敏打单机", "扫码枪", "称重复核台", "订单管理系统") if k in question), None)
+            drink = next((k for k in ("蛋白粉随行杯", "燕麦拿铁随行杯", "益生菌冲饮") if k in question), None)
+            symptoms = [k for k in ("不出纸", "打印偏淡", "漏水", "异响", "焦味", "冒烟", "扫码不灵", "不充电", "漏电", "火花",
+                                       "批量超时未发货", "批量资损", "监管投诉") if k in question]
+            if drink or "规格参数" in question or "规格表" in question:
                 intent = "drink_sop"
                 slots.drink_name = drink
             elif equipment or symptoms or "机器" in question or known.get("equipment_model"):
@@ -192,10 +193,10 @@ class OfflineChatModel:
         if not choices:
             return GroundedAnswerDraft(answer="手册中未找到相关规定", insufficient_evidence=True)
         _, index, line, content = max(choices, key=lambda item: item[0])
-        if self.tamper_numbers and "柠檬" in line:
+        if self.tamper_numbers and "蛋白粉" in line:
             line = line.replace("40g", "45g")
         answer = f"{line} [来源{index}]"
-        if subject in ("珍珠奶茶", "草莓酸奶"):
+        if subject in ("燕麦拿铁随行杯", "益生菌冲饮"):
             for source_line in content.splitlines():
                 if "过敏" in source_line:
                     answer += f"\n{source_line} [来源{index}]"

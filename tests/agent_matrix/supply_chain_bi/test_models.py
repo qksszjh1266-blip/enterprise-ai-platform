@@ -63,7 +63,7 @@ async def test_03_attempt_and_alert_models(make_agent):
         with pytest.raises(ValidationError):InventoryAlert.model_validate(alert|update)
 
 def test_04_catalog_validators():
-    assert SUPPLY_CHAIN_CATALOG.catalog_version==1
+    assert SUPPLY_CHAIN_CATALOG.catalog_version==2
     data=SUPPLY_CHAIN_CATALOG.model_dump();data['tables'][0]['sensitive_columns']=['warehouse_id']
     with pytest.raises(ValidationError):SemanticCatalogSpec.model_validate(data)
     data=SUPPLY_CHAIN_CATALOG.model_dump();data['metrics'][0]['required_columns']['fact_material_loss'].append('not_registered')

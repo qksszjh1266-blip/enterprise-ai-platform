@@ -25,8 +25,8 @@ class Persona:
 
 
 PERSONAS: tuple[Persona, ...] = (
-    Persona("store_clerk", "门店店员", "store_clerk_01", "store_ops", ("clerk",), ("sop", "bi", "finance")),
-    Persona("store_manager", "门店店长", "store_manager_01", "store_ops", ("store_manager",), ("sop",)),
+    Persona("store_clerk", "电商运营专员", "store_clerk_01", "store_ops", ("clerk",), ("sop", "bi", "finance")),
+    Persona("store_manager", "店铺运营主管", "store_manager_01", "store_ops", ("store_manager",), ("sop",)),
     Persona("hq_analyst", "总部供应链分析师（全国）", "hq_analyst", "supply_chain", ("hq_supply_analyst",), ("bi",)),
     Persona("region_manager", "华东大区经理（大区）", "mgr_east", "supply_chain", ("supply_manager",), ("bi",)),
     Persona("warehouse_clerk", "杭州仓管员（单仓）", "wh_sup_e01", "supply_chain", ("warehouse",), ("sop", "bi")),

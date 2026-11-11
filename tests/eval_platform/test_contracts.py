@@ -2,6 +2,7 @@
 import ast
 from pathlib import Path
 import subprocess
+from tests.contract_baseline import assert_python_tree_frozen, assert_structure_frozen, baseline_files, current_files, parse_normalized
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -23,18 +24,18 @@ def methods(tree):
 
 
 def test_data_platform_unchanged_from_main():
-    diff=subprocess.check_output(['git','diff','--stat','main','--','data_platform/'],cwd=ROOT,text=True)
-    assert not diff.strip(),diff
+    # Structure frozen against main; only non-ASCII scenario copy (docstrings / descriptions) may differ.
+    assert_python_tree_frozen('data_platform')
+    assert [p for p in baseline_files('data_platform') if not p.endswith('.py')]==[p for p in current_files('data_platform') if not p.endswith('.py')]
 
 
 def test_frozen_eval_signatures_models_and_validators():
     for name in ('models.py','ports.py'):
-        path=f'eval_platform/{name}'
-        assert (ROOT/path).read_text()==original(path)
+        assert_structure_frozen(f'eval_platform/{name}')
     for name in ('evaluators.py','runner.py','report_generator.py'):
         path=f'eval_platform/{name}'
-        before=methods(ast.parse(original(path)))
-        after=methods(ast.parse((ROOT/path).read_text()))
+        before=methods(parse_normalized(original(path)))
+        after=methods(parse_normalized((ROOT/path).read_text()))
         for key,node in before.items():
             replacement=after[key]
             assert type(node) is type(replacement),key

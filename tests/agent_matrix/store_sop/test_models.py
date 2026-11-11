@@ -21,7 +21,7 @@ def test_response_invariants(change):
 
 def ticket_values():
     return dict(idempotency_key='s:e:f', session_id='s',reporter_user_id='u',dept_id='d',
-        equipment_model='制冰机',fault_symptom='焦味',severity='p1_safety',summary='故障',created_at=datetime.now(timezone.utc))
+        equipment_model='热敏打单机',fault_symptom='焦味',severity='p1_safety',summary='故障',created_at=datetime.now(timezone.utc))
 
 
 def test_ticket_invariants_and_clarification_exclusion():

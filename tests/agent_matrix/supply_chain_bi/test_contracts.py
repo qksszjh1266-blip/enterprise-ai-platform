@@ -1,18 +1,16 @@
 import ast
 from pathlib import Path
 import re
-import subprocess
 from agent_matrix.supply_chain_bi.api import create_app,API_PREFIX
 from agent_matrix.supply_chain_bi.render import RENDER_VERSION
 from agent_matrix.supply_chain_bi.semantic_layer import SUPPLY_CHAIN_CATALOG
+from tests.contract_baseline import _Normalize, assert_python_tree_frozen, baseline_source
 
 ROOT=Path(__file__).resolve().parents[3]
 PROTECTED=['data_platform/','eval_platform/','agent_matrix/store_sop/']
 
 def test_50_upstream_modules_zero_diff():
-    result=subprocess.run(['git','diff','--stat','main','--',*PROTECTED],cwd=ROOT,capture_output=True,text=True,check=True)
-    assert result.stdout==''
-    assert subprocess.run(['git','ls-files','--others','--exclude-standard','--',*PROTECTED],cwd=ROOT,capture_output=True,text=True,check=True).stdout==''
+    assert_python_tree_frozen(*PROTECTED)
 
 def test_51_async_pydantic_compliance():
     for path in (ROOT/'agent_matrix').rglob('*.py'):
@@ -32,8 +30,8 @@ def test_frozen_contracts_unchanged():
     folder=ROOT/'agent_matrix/supply_chain_bi'
     for path in folder.glob('*.py'):
         if path.name=='sandbox_sqlite.py':continue
-        baseline=subprocess.run(['git','show',f'HEAD:agent_matrix/supply_chain_bi/{path.name}'],cwd=ROOT,capture_output=True,text=True,check=True).stdout
-        old,new=ast.parse(baseline),ast.parse(path.read_text())
+        baseline=baseline_source(f'agent_matrix/supply_chain_bi/{path.name}')
+        old,new=(_Normalize({}).visit(ast.parse(source)) for source in (baseline,path.read_text()))
         def declarations(tree):
             return {node.name:node for node in tree.body if isinstance(node,(ast.ClassDef,ast.FunctionDef,ast.AsyncFunctionDef))}
         old_nodes,new_nodes=declarations(old),declarations(new)

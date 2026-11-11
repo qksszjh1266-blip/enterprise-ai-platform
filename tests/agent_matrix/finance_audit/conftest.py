@@ -22,7 +22,7 @@ async def ledger():
 @pytest.fixture
 async def finance_retrieval(manager,retrieval):
     await publish_corpus(manager,extended=True)
-    source=Path(__file__).parent/'data/franchise_contract_policy.md'
+    source=Path(__file__).parent/'data/supplier_contract_policy.md'
     text=await asyncio.to_thread(source.read_text,encoding='utf-8')
     for doc_id,section in zip(('contract_payment','contract_breach','contract_approval','contract_private'),text.split('\n## ')[1:]):
         result=await manager.sync_document(DocumentIngestRequest(doc_id=doc_id,title=doc_id,source_system='oa',

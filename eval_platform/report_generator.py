@@ -5,7 +5,7 @@
     2. 核心指标看板（检索命中率 / 平均召回率 / MRR / 回答准确率 / 忠实度 / 满意度 /
        P50 / P95 / 降级率 / 错误率 / 越权拦截率 / token 成本；有基线时附带涨跌箭头）
     3. 上线门禁结论（仅 diff 不为 None 时；逐条列出阻断原因）
-    4. 分场景表现（门店SOP / 供应链 / 财务审批）
+    4. 分场景表现（电商运营SOP / 供应链 / 财务审批）
     5. 分部门表现（按 dept_id）
     6. 坏例归因分布（FailureCategory 计数与占比，降序）
     7. Top Bad Cases
@@ -40,7 +40,7 @@ RECOMMENDATION_RULES: dict[FailureCategory, str] = {
     FailureCategory.HALLUCINATION: "回答未被上下文支撑：收紧生成 prompt 的引用约束，要求逐条标注来源父块。",
     FailureCategory.ANSWER_INCORRECT: "回答与标准答案不一致：复核手册版本是否已同步发布，检查表格类父块是否被截断。",
     FailureCategory.INCOMPLETE_ANSWER: "关键事实遗漏：检查表格行是否完整保留在父块内，提示模型完整列出配比 / 审批角色等要素。",
-    FailureCategory.LOW_SATISFACTION: "模拟满意度偏低：精简回答结构，优先给出门店可直接执行的步骤。",
+    FailureCategory.LOW_SATISFACTION: "模拟满意度偏低：精简回答结构，优先给出一线可直接执行的步骤。",
     FailureCategory.DEGRADED_SERVICE: "存在降级请求：排查 degraded_reasons 高频原因码对应的下游依赖。",
     FailureCategory.JUDGE_ERROR: "裁判模型调用失败：检查裁判服务配额与超时，失败样本的端到端指标未纳入统计。",
 }

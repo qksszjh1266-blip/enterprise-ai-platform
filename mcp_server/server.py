@@ -2,7 +2,7 @@
 
     Tool   search_enterprise_knowledge   ACL 前置过滤的企业知识库混合检索（只读）
     Tool   list_supply_chain_metrics     供应链语义层白名单指标定义与口径（只读，不执行 SQL）
-    Prompt sop_citation_qa_prompt        门店 SOP 带引用防幻觉问答模板
+    Prompt sop_citation_qa_prompt        电商运营 SOP 带引用防幻觉问答模板
 
 所有依赖（检索服务、可信身份、语义层）均由调用方注入，create_server 本身无 I/O，
 单测可用 mcp.Client(server) 进程内直连，stdio 入口见 mcp_server.__main__。
@@ -26,7 +26,7 @@ SERVER_VERSION = "0.1.0"
 
 SERVER_INSTRUCTIONS = """\
 企业知识与只读业务能力服务。
-- 回答门店 / 部门制度类问题前，先调用 search_enterprise_knowledge 获取证据；department 与 role 必须填写当前登录用户自己的部门与角色。
+- 回答商品规格参数、售后退换赔付、仓配设备排障或部门制度类问题前，先调用 search_enterprise_knowledge 获取证据；department 与 role 必须填写当前登录用户自己的部门与角色。
 - 拿到证据后可使用 sop_citation_qa_prompt 渲染带 [来源n] 引用的问答消息；无证据时不得作答。
 - 供应链指标口径问题调用 list_supply_chain_metrics；本服务不执行任何 SQL。"""
 
@@ -36,15 +36,17 @@ SEARCH_DESCRIPTION = (
     "在调用方有权限的企业知识库中做混合检索（向量 + BM25 + 精排），返回带章节路径与文档来源的证据列表。"
     "department 与 role 必填，且必须属于当前调用方的授权范围，否则返回 PERMISSION_DENIED；"
     "检索内部强制执行部门与角色 ACL 前置过滤。degraded=true 表示证据可能不完整。"
+    "示例：query=\"蛋白粉随行杯 500ml 的标准规格参数\"、department=\"store_ops\"、role=\"clerk\"。"
 )
 
 METRICS_DESCRIPTION = (
-    "只读列出供应链语义层白名单标准指标的定义、计算口径、单位与推荐维度；可按指标名或同义词过滤。"
+    "只读列出供应链语义层白名单标准指标的定义、计算口径、单位与推荐维度；可按指标名或同义词过滤，"
+    "如 keyword=\"货损率\" / \"安全库存缺口\" / \"SKU 销量\"。"
     "不返回 SQL，也不执行任何查询。"
 )
 
 PROMPT_DESCRIPTION = (
-    "门店 SOP 带引用防幻觉问答模板：传入 search_enterprise_knowledge 的输出（或证据数组）与用户问题，"
+    "电商运营 SOP 带引用防幻觉问答模板：传入 search_enterprise_knowledge 的输出（或证据数组）与用户问题，"
     "渲染为要求逐句标注 [来源n]、资料不足即拒答的结构化消息。"
 )
 
@@ -80,7 +82,7 @@ def create_server(
     ) -> tools.SupplyChainMetricCatalog:
         return tools.list_supply_chain_metrics(layer, keyword=keyword)
 
-    @server.prompt(name="sop_citation_qa_prompt", title="门店 SOP 引用问答", description=PROMPT_DESCRIPTION)
+    @server.prompt(name="sop_citation_qa_prompt", title="电商运营 SOP 引用问答", description=PROMPT_DESCRIPTION)
     def sop_citation_qa_prompt(
         question: Annotated[str, Field(description="用户问题")],
         evidence: Annotated[str, Field(description="JSON：search_enterprise_knowledge 的输出或证据数组")],

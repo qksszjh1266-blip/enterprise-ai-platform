@@ -1,4 +1,4 @@
-"""Reproduce the offline architectural comparison: uv run python -m tests.eval_platform.run_catering."""
+"""Reproduce the offline architectural comparison: uv run python -m tests.eval_platform.run_ecommerce."""
 import asyncio
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -21,9 +21,9 @@ from tests.eval_platform.corpus import ROOT, publish_corpus
 
 
 @asynccontextmanager
-async def catering_system():
+async def ecommerce_system():
     directory = await asyncio.to_thread(TemporaryDirectory)
-    engine = create_async_engine(f'sqlite+aiosqlite:///{Path(directory.name)/"catering.sqlite"}')
+    engine = create_async_engine(f'sqlite+aiosqlite:///{Path(directory.name)/"ecommerce.sqlite"}')
     @event.listens_for(engine.sync_engine, 'connect')
     def configure(connection, _):
         connection.execute('PRAGMA foreign_keys=ON')
@@ -48,35 +48,35 @@ async def catering_system():
         await asyncio.to_thread(directory.cleanup)
 
 
-async def compare_catering():
-    samples = await load_eval_suite(ROOT/'eval_platform/golden_datasets/catering_suite.json')
-    async with catering_system() as service:
+async def compare_ecommerce():
+    samples = await load_eval_suite(ROOT/'eval_platform/golden_datasets/ecommerce_suite.json')
+    async with ecommerce_system() as service:
         common = dict(system_name='HybridRetrievalService', top_k=3, max_concurrency=4)
         # Warm up SQLite and adapters equally. All measured runs use the same published corpus.
         await EvalRunner(config=EvalRunConfig(**common,system_version='warmup'),retrieval=service).run(samples,suite_name='warmup')
         baseline = await EvalRunner(config=EvalRunConfig(**common,system_version='hybrid-rrf-no-rerank',enable_rerank=False),
-            retrieval=service).run(samples,suite_name='catering_suite',run_id='catering-baseline')
+            retrieval=service).run(samples,suite_name='ecommerce_suite',run_id='ecommerce-baseline')
         candidate = await EvalRunner(config=EvalRunConfig(**common,system_version='hybrid-rrf-rerank',enable_rerank=True),
-            retrieval=service).run(samples,suite_name='catering_suite',run_id='catering-candidate')
+            retrieval=service).run(samples,suite_name='ecommerce_suite',run_id='ecommerce-candidate')
         e2e = await EvalRunner(config=EvalRunConfig(**common,system_version='offline-extractive-rules',mode=EvalMode.END_TO_END),
-            agent=RuleBasedAgent(service,top_k=3),judge=RuleBasedJudge()).run(samples,suite_name='catering_suite',run_id='catering-rules')
+            agent=RuleBasedAgent(service,top_k=3),judge=RuleBasedJudge()).run(samples,suite_name='ecommerce_suite',run_id='ecommerce-rules')
     # Predeclared local experiment budget, not a production latency acceptance criterion.
     gate = RegressionGate(GateConfig(max_p95_latency_increase=10,max_p95_latency_ms=1000))
     return baseline, candidate, gate.compare(baseline,candidate), e2e, gate.config
 
 
 async def export_report(output: Path):
-    baseline,candidate,diff,e2e,gate_config = await compare_catering()
+    baseline,candidate,diff,e2e,gate_config = await compare_ecommerce()
     renderer = MarkdownReportGenerator(decimals=2)
     methodology = (
         '\n## 实验口径与复现\n\n'
-        '- 复现命令：`uv run python -m tests.eval_platform.run_catering`。\n'
-        '- 语料：三份虚构培训制度，按权限边界拆为14篇文档；32条黄金样本，24条业务问答、8条红线。\n'
+        '- 复现命令：`uv run python -m tests.eval_platform.run_ecommerce`。\n'
+        '- 语料：三份虚构电商制度（自营商品与仓配运营手册、仓储作业规范、财务报销制度），按权限边界拆为14篇文档；38条黄金样本，28条业务问答、10条红线。\n'
         '- 真实执行数据中台切分、VersionedSyncManager 发布、SQLite 台账与父块回表、ACL 双重过滤、双路召回、RRF 和精排编排。'
         'HybridRetrievalService 直接传给 EvalRunner.retrieval，无适配器。\n'
         '- Baseline：双路混合检索、关闭精排；Candidate：相同双路和语料、开启精排。Top K=3，评测并发=4，先预热。\n'
         '- 索引、嵌入与精排复用数据中台内存替身：SHA-256 假向量、字符词频匹配、规则精排；未连接真实 Milvus、Elasticsearch 或 LLM。'
-        '结果仅衡量这套离线架构实验，不代表线上模型收益或万店负载性能。\n'
+        '结果仅衡量这套离线架构实验，不代表线上模型收益或百万单负载性能。\n'
         '- Hit/Recall/MRR 按返回父块的首次出现顺序折叠为文档排名；检索端返回上限仍是3个父块。红线不参与检索均值。\n'
         '- 门禁质量与安全阈值保持默认；本地延迟预先设为相对增幅上限1000%、绝对P95上限1000ms，'
         '用于排除SQLite微基准调度噪声；耗时为实测值，每次运行可能变化。\n'

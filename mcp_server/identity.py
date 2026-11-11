@@ -9,7 +9,7 @@
 校验通过后才以 UserContext(dept_id=department, roles=[role]) 调用 HybridRetrievalService，
 后者再执行原有的台账 ACL 前置过滤（双重校验，任何一层不通过都拿不到文档）。
 
-环境变量（均为可选；未设置时回落到最低权限的门店店员演示身份）：
+环境变量（均为可选；未设置时回落到最低权限的电商运营专员演示身份）：
 
     EAP_MCP_USER_ID      调用用户 ID（审计用）
     EAP_MCP_DEPARTMENT   所属部门，如 store_ops
@@ -63,7 +63,7 @@ class CallerPrincipal(BaseModel):
 
     @classmethod
     def demo(cls) -> CallerPrincipal:
-        """最低权限演示身份：门店运营部店员。"""
+        """最低权限演示身份：电商运营部运营专员。"""
         return cls(user_id=DEMO_USER_ID, department=DEMO_DEPARTMENT, roles=DEMO_ROLES)
 
     @classmethod

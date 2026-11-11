@@ -1,4 +1,4 @@
-"""连锁餐饮财务费用报销与加盟采购合同合规预审智能体。
+"""综合电商财务费用报销与商品采购合同合规预审智能体。
 
 FinanceAuditAgent 结构化满足 eval_platform.ports.AgentSystemPort（`async def invoke(AgentInvocation) -> AgentResponse`），
 可零适配接入 EvalRunner 跑 END_TO_END 回归评测；同时提供 audit 入口供 api.py / 平台 Workflow 调用。
@@ -131,7 +131,7 @@ AUDIT_RENDER_VERSION = "finance_audit.v1"
 
 
 class FinanceAuditAgent:
-    """财务费用报销与加盟采购合同合规预审智能体。"""
+    """财务费用报销与商品采购合同合规预审智能体。"""
 
     def __init__(
         self,
@@ -699,7 +699,7 @@ class FinanceAuditAgent:
 
 
 _CATEGORY_NAMES = dict(zip(ExpenseCategory, ('日常耗材', '设备维修', '装修改造', '差旅住宿', '市内交通', '其他费用')))
-_CONTRACT_NAMES = dict(zip(ContractType, ('加盟采购', '设备采购', '门店租赁', '装修服务', '物流服务', '其他合同')))
+_CONTRACT_NAMES = dict(zip(ContractType, ('商品采购', '设备采购', '仓库租赁', '装修服务', '物流服务', '其他合同')))
 
 
 def _reference(submission):

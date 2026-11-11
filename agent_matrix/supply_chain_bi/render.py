@@ -13,12 +13,12 @@ eval_judge.DataAnalysisJudge 按同一格式解析；两侧只能通过本模块
     scope: 华东大区 · 授权仓 2 个
     sql: SELECT ... LIMIT 200
     columns: warehouse_id | material_id | loss_rate
-    row: WH_E01 | MAT_LEMON | 0.0523
+    row: WH_E01 | MAT_PROBIOTIC | 0.0523
     row: ...
     truncated: false
 
     [BI_ALERTS_V1]
-    alert: safety_stock_breach | p1 | WH_E01 | MAT_LEMON | current=12.0 | threshold=40.0 | gap=28.0 | replenish | qty=28.0
+    alert: safety_stock_breach | p1 | WH_E01 | MAT_PROBIOTIC | current=12.0 | threshold=40.0 | gap=28.0 | replenish | qty=28.0
 
 - 单元格分隔符 ` | `；单元格内的 `|` 与换行转义为 `\\|` / `\\n`；None 渲染为 `NULL`；float 用 repr（保留原始精度）。
 - 仅渲染 ResultTable.rows（展示行），不渲染敏感信息；范围只渲染 scope_summary，不渲染仓库 ID 列表。
@@ -55,14 +55,14 @@ RESULT_CONTEXT_HEADER = "[BI_RESULT_V1]"
 ALERT_CONTEXT_HEADER = "[BI_ALERTS_V1]"
 
 REFUSAL_TEMPLATES: dict[RefusalReason, str] = {
-    RefusalReason.OUT_OF_SCOPE: "我是供应链经营分析助手，只能回答库存、效期、损耗、门店销量等供应链数据问题。",
+    RefusalReason.OUT_OF_SCOPE: "我是供应链经营分析助手，只能回答库存、效期、损耗、店铺销量等供应链数据问题。",
     RefusalReason.SENSITIVE_FIELD: "采购底价、供应商合同价及成本类金额属于受控数据，本助手无法查询，请通过采购部审批流程获取。",
     RefusalReason.SCOPE_VIOLATION: "您当前的数据权限不包含所询问的大区或仓库，以下分析只能在您的授权范围内进行。如需扩大范围请联系供应链数据管理员。",
     RefusalReason.POLICY_VIOLATION: "该问题生成的查询触发了数据安全策略，已终止执行。请换一种问法，只询问库存、效期、损耗或销量指标。",
 }
 """拒答话术：不得包含任何表名、列名、仓库 ID 或"该数据存在"的确认。"""
 
-SQL_RETRY_EXHAUSTED_NOTICE = "多次尝试后仍未能生成符合口径与安全规范的查询，请把问题拆小（例如指定原料、仓库或日期范围）后重试。"
+SQL_RETRY_EXHAUSTED_NOTICE = "多次尝试后仍未能生成符合口径与安全规范的查询，请把问题拆小（例如指定商品、仓库或日期范围）后重试。"
 DATA_SOURCE_UNAVAILABLE_NOTICE = "分析数据源暂不可用，本次未执行任何查询。紧急补货请按线下预警流程处理，稍后可重试。"
 TRUNCATION_NOTICE = "（结果超过 {max_rows} 行已截断，结论仅基于前 {max_rows} 行，请增加筛选条件获取完整口径。）"
 EMPTY_RESULT_NOTICE = "在 {scope_summary} 范围内、基准日 {as_of_date} 未查询到符合条件的数据。"
@@ -86,7 +86,7 @@ def render_clarification(candidates: Sequence[MetricDefinition], model_question:
     二者皆无时用固定兜底问句。"""
     if len(candidates) >= 2:
         return "您想看的是：" + "还是".join(f"{m.display_name}（{m.calculation_caliber.split('。')[0]}）" for m in candidates[:3]) + "？"
-    return model_question or "请说明要分析的库存、效期、损耗或销量指标，以及原料和日期范围。"
+    return model_question or "请说明要分析的库存、效期、损耗或销量指标，以及商品和日期范围。"
 
 
 def render_result_table(execution: SqlExecutionResult, *, display_rows: int) -> ResultTable:

@@ -50,7 +50,7 @@ async def manager(factory):
 
 @pytest.fixture
 def req():
-    return DocumentIngestRequest(doc_id='sop', title='门店手册', source_system='oa', content='# 门店\n\n标准作业说明。' * 30, dept_id='ops', allowed_roles=['staff', 'manager'])
+    return DocumentIngestRequest(doc_id='sop', title='店铺手册', source_system='oa', content='# 店铺\n\n标准作业说明。' * 30, dept_id='ops', allowed_roles=['staff', 'manager'])
 
 
 @pytest.fixture
@@ -67,12 +67,12 @@ async def retrieval(manager):
 @pytest.fixture
 def search_req():
     from data_platform.retrieval_engine.models import SearchRequest, UserContext
-    return SearchRequest(query='门店', user_context=UserContext(user_id='user', dept_id='ops', roles=['manager']))
+    return SearchRequest(query='店铺', user_context=UserContext(user_id='user', dept_id='ops', roles=['manager']))
 
 
 @pytest.fixture
 async def published(manager, req):
     for doc_id in ('sop', 'other'):
-        result = await manager.sync_document(req.model_copy(update={'doc_id': doc_id, 'content': '# 门店\n\n门店标准作业说明。'}))
+        result = await manager.sync_document(req.model_copy(update={'doc_id': doc_id, 'content': '# 店铺\n\n店铺标准作业说明。'}))
         assert result.outcome.value == 'published'
     await manager.aclose()

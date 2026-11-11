@@ -4,7 +4,7 @@
 
 语义层数据字典
 - ColumnSpec / TableSchemaSpec        允许查询的物理表、列白名单、敏感列黑名单、行级权限键
-- MetricDefinition                    标准业务指标（原料损耗率 / 安全库存缺口 / 效期周转天数 …）及计算口径
+- MetricDefinition                    标准业务指标（商品货损率 / 安全库存缺口 / 效期周转天数 …）及计算口径
 - AlertQueryTemplate                  目录内置的确定性预警查询（非 LLM 生成）
 - SemanticCatalogSpec                 整个语义目录（表 + 指标 + 全局黑名单 + 系统元数据表模式）
 - SemanticContext                     送入 SqlGeneratorModelPort 的脱敏语义上下文（不含敏感列名）
@@ -89,22 +89,22 @@ class MetricUnit(str, enum.Enum):
     QUANTITY = "quantity"  # 物料基本单位（kg / 箱 / 袋，见 MetricDefinition.quantity_unit_column）
     DAYS = "days"
     CUPS = "cups"
-    CNY = "cny"  # 仅限门店零售营收；采购成本类金额一律不可查
+    CNY = "cny"  # 仅限店铺零售营收；采购成本类金额一律不可查
 
 
 class ScopeLevel(str, enum.Enum):
     """行级权限范围层级。"""
 
-    WAREHOUSE = "warehouse"  # 单仓 / 多仓督导：region_id + 授权仓库列表
+    WAREHOUSE = "warehouse"  # 单仓 / 多仓主管：region_id + 授权仓库列表
     REGION = "region"  # 大区经理：region_id 下全部仓库
     NATIONAL = "national"  # 总部供应链分析：全国（敏感列黑名单仍然生效）
 
 
 class AnalysisIntentType(str, enum.Enum):
     METRIC_QUERY = "metric_query"  # 指标查询 / 对比 / 排名 / 趋势
-    ALERT_SCAN = "alert_scan"  # "哪些原料要补货 / 哪些批次快过期"
+    ALERT_SCAN = "alert_scan"  # "哪些商品要补货 / 哪些批次快过期"
     SENSITIVE_REQUEST = "sensitive_request"  # 询问采购底价、供应商合同价、利润底表等
-    OUT_OF_SCOPE = "out_of_scope"  # 非供应链分析（门店 SOP、报销、闲聊）
+    OUT_OF_SCOPE = "out_of_scope"  # 非供应链分析（电商运营 SOP、报销、闲聊）
 
 
 class SqlViolationCode(str, enum.Enum):
@@ -186,7 +186,7 @@ class AlertAction(str, enum.Enum):
     REPLENISH = "replenish"  # 向上游中心仓 / 供应商补货
     TRANSFER_IN = "transfer_in"  # 从授权范围内富余仓调入
     TRANSFER_OUT = "transfer_out"  # 临期批次调往授权范围内高消耗仓
-    PRIORITIZE_CONSUMPTION = "prioritize_consumption"  # 先进先出 / 门店优先排产
+    PRIORITIZE_CONSUMPTION = "prioritize_consumption"  # 先进先出 / 订单优先履约
     INSPECT_AND_DISPOSE = "inspect_and_dispose"  # 剩余效期不足以消化，需质检与报损审批
 
 
@@ -292,7 +292,7 @@ class MetricDefinition(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     metric_id: str = Field(..., pattern=_IDENT)
-    display_name: str = Field(..., min_length=1, max_length=32, description="标准业务指标名，如 原料损耗率")
+    display_name: str = Field(..., min_length=1, max_length=32, description="标准业务指标名，如 商品货损率")
     aliases: list[str] = Field(default_factory=list, description="同义词，用于语义匹配，如 报损率 / 损耗占比")
     calculation_caliber: str = Field(..., min_length=1, max_length=1000, description="标准计算口径描述（中文）")
     formula_sql: str = Field(..., min_length=1, max_length=1000, description="参考 SQL 表达式")
@@ -325,7 +325,7 @@ class AlertQueryTemplate(BaseModel):
 
 
 class SemanticCatalogSpec(BaseModel):
-    """餐饮供应链语义目录。"""
+    """电商供应链语义目录。"""
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

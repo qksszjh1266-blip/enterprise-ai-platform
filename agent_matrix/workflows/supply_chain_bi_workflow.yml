@@ -1,11 +1,11 @@
 # =============================================================================
-# 供应链库存预警与经营分析助手 —— 平台 Workflow 编排定义
+# 经营数据分析与进销存预警助手 —— 平台 Workflow 编排定义
 #
 # 定位：标准平台编排结构定义，字段布局对齐 Dify DSL（workflow 模式）便于在 Dify / HiAgent 上对照搭建；
 #       节点 id、模型凭据、工具 provider_id 需在目标平台生成。业务语义以 agent_matrix/supply_chain_bi/agent.py
 #       为唯一真源，本文件与之冲突时以代码为准。
 #
-# 只提供"薄编排"一种模式（与 门店 SOP 不同，**不提供**画布原生复刻）：
+# 只提供"薄编排"一种模式（与 电商运营 SOP 不同，**不提供**画布原生复刻）：
 #   Text-to-SQL 的安全性依赖三件必须在服务端闭环内的东西——SqlStaticGuard（AST 守卫）、WarehouseScopeFilter
 #   （可信行级范围 → 绑定参数）、ReadOnlySqlSandboxPort（连接层只读 + 超时 + 行数上限）。若在画布上用 LLM 节点
 #   生成 SQL 再经 HTTP 执行，等于把"裸 SQL 执行端点"暴露给编排层，任何画布改动都能绕过守卫。故 api.py 也刻意
@@ -31,7 +31,7 @@ version: "0.1.5"
 app:
   mode: workflow
   name: 供应链经营分析助手
-  description: 库存 / 安全库存缺口 / 效期周转 / 原料损耗 / 门店杯量的自然语言分析与补货调拨预警（受控只读 SQL）
+  description: 库存 / 安全库存缺口 / 效期周转 / 商品货损 / SKU 销量的自然语言分析与补货调拨预警（受控只读 SQL）
   icon: "package"
   use_icon_as_answer_icon: false
 
@@ -44,13 +44,13 @@ workflow:
   environment_variables:
     - {name: SUPPLY_CHAIN_BI_BASE_URL, value_type: string, value: "http://supply-chain-bi-agent.internal"}
     - {name: RENDER_VERSION, value_type: string, value: "supply_chain_bi.v1", description: "须与 agent_matrix/supply_chain_bi/render.py 一致"}
-    - {name: CATALOG_VERSION, value_type: number, value: 1, description: "须与 semantic_layer.SUPPLY_CHAIN_CATALOG.catalog_version 一致"}
+    - {name: CATALOG_VERSION, value_type: number, value: 2, description: "须与 semantic_layer.SUPPLY_CHAIN_CATALOG.catalog_version 一致"}
 
   features:
-    opening_statement: 您好，我是供应链经营分析助手，可以查询您授权仓库的库存、安全库存缺口、临期批次、原料损耗率与门店销量。
+    opening_statement: 您好，我是供应链经营分析助手，可以查询您授权仓库的库存、安全库存缺口、临期批次、商品货损率与 SKU 销量。
     suggested_questions:
-      - 我负责的仓库哪些原料已经跌破安全库存？
-      - 近 30 天柠檬的原料损耗率是多少？按仓库排一下
+      - 我负责的仓库哪些商品已经跌破安全库存？
+      - 近 30 天益生菌粉的商品货损率是多少？按仓库排一下
       - 未来 7 天会过期但用不完的批次有哪些？
     file_upload: {enabled: false}
 
@@ -166,7 +166,7 @@ workflow:
       - {source: route_stop_reason, sourceHandle: "false", target: end_other}
 
 # -----------------------------------------------------------------------------
-# 定时预警（可选，平台定时触发器）：每日 07:00 以各仓库督导身份调用同一 workflow，
+# 定时预警（可选，平台定时触发器）：每日 07:00 以各仓库主管身份调用同一 workflow，
 #   question = "我负责的仓库有哪些安全库存跌破和临期积压？"，include_alerts = true；
-#   alerts 非空时推送企业 IM。触发器须以真实督导账号身份经网关调用，**不得**使用全国范围的服务账号代跑后再分发。
+#   alerts 非空时推送企业 IM。触发器须以真实仓库主管账号身份经网关调用，**不得**使用全国范围的服务账号代跑后再分发。
 # -----------------------------------------------------------------------------

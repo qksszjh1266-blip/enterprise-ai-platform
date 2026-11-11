@@ -3,7 +3,7 @@
     POST /api/v1/agents/finance-audit/audit         -> FinanceAuditAgent.audit（报销单 / 合同，按 submission.subject_type 判别）
     GET  /api/v1/agents/finance-audit/rule-limits   -> 当前生效的审批档位 / 类别额度 / 税率白名单 / 违规策略表（不含任何单据数据）
 
-身份注入：与 门店 SOP / 供应链 BI 相同——网关注入 `X-User-Id` / `X-Dept-Id` / `X-User-Roles`（逗号分隔），
+身份注入：与 电商运营 SOP / 供应链 BI 相同——网关注入 `X-User-Id` / `X-Dept-Id` / `X-User-Roles`（逗号分隔），
 get_trusted_user_context 据此构造 UserContext 并**覆盖** FinanceAuditPayload.user_context；三个头都缺失时
 仅在 app.state.allow_body_identity=True（内网调试）下回退使用请求体，否则 401。
 submission.applicant 是单据业务事实，**永远不**作为调用身份或 ACL 依据。
@@ -117,9 +117,9 @@ def get_trusted_user_context(request: Request, body_user_context: UserContext | 
 @router.post(
     "/audit",
     operation_id="finance_audit_submit",
-    summary="费用报销 / 加盟采购合同合规预审",
+    summary="费用报销 / 商品采购合同合规预审",
     description=(
-        "提交一张门店费用报销单（subject_type=expense）或一份加盟 / 采购合同（subject_type=contract）进行合规预审。"
+        "提交一张部门费用报销单（subject_type=expense）或一份商品采购 / 仓储物流合同（subject_type=contract）进行合规预审。"
         "金额、税率、数量必须以字符串传入（如 \"128.50\"、\"0.13\"）。"
         "route=AUTO_APPROVE 表示预审通过、按 approver_tier 进入常规审批（不等于付款）；"
         "NEEDS_SUPPLEMENT 时 supplement_requests 为补正清单；ESCALATE_HUMAN 时 human_approval_ticket_id 为人工复核单号；"
@@ -199,7 +199,7 @@ def create_app(agent: FinanceAuditAgent | None = None, *, allow_body_identity: b
     app = FastAPI(
         title="Finance Audit Agent API",
         version="0.5.0",
-        description="连锁餐饮费用报销与加盟采购合同合规预审：PII 确定性脱敏、Decimal 金额勾稽、制度引用闭锁校验、高风险转人工复核。",
+        description="综合电商费用报销与商品采购合同合规预审：PII 确定性脱敏、Decimal 金额勾稽、制度引用闭锁校验、高风险转人工复核。",
     )
     app.state.finance_audit_agent = agent
     app.state.allow_body_identity = allow_body_identity

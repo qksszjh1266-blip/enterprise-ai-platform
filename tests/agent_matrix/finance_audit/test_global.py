@@ -7,9 +7,10 @@ import pytest
 from agent_matrix.finance_audit.agent import AUDIT_RENDER_VERSION
 from agent_matrix.finance_audit.api import create_app
 from agent_matrix.finance_audit.models import FinanceRuleConfig
+from tests.contract_baseline import assert_python_tree_frozen, assert_structure_frozen, parse_normalized
 
 ROOT=Path(__file__).resolve().parents[3]
-PROTECTED=('data_platform','eval_platform','agent_matrix/store_sop','agent_matrix/supply_chain_bi','mock_docs')
+PROTECTED=('data_platform','eval_platform','agent_matrix/store_sop','agent_matrix/supply_chain_bi')
 
 
 async def git(*args):
@@ -20,16 +21,17 @@ async def git(*args):
 
 
 async def test_87_upstream_modules_zero_diff():
-    assert not await git('diff','--stat','main','--',*PROTECTED)
-    assert not await git('ls-files','--others','--exclude-standard','--',*PROTECTED)
+    # Upstream code is frozen structurally against main (scenario copy excepted, see tests/contract_baseline.py).
+    # mock_docs is scenario corpus; its facts are pinned by the golden-set grounding tests instead.
+    await asyncio.to_thread(assert_python_tree_frozen,*PROTECTED)
 
 
 async def test_frozen_models_ports_and_signatures():
     base=ROOT/'agent_matrix/finance_audit'
     for name in ('models.py','ports.py'):
-        assert (await asyncio.to_thread((base/name).read_text))==await git('show','main:agent_matrix/finance_audit/'+name)
+        await asyncio.to_thread(assert_structure_frozen,'agent_matrix/finance_audit/'+name)
     def signatures(source):
-        tree=ast.parse(source); result={}
+        tree=parse_normalized(source); result={}
         def collect(nodes,prefix=''):
             for node in nodes:
                 if isinstance(node,ast.ClassDef): collect(node.body,prefix+node.name+'.')

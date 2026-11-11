@@ -10,7 +10,7 @@ from data_platform.retrieval_engine.ports import VectorSearchPort, KeywordSearch
 async def test_01_normal(retrieval, published, search_req):
     response = await retrieval.search(search_req)
     assert not response.degraded and len(response.results) == 2
-    assert all(p.full_content == '门店\n门店标准作业说明。' and p.section_path and p.source_branches == [B.VECTOR, B.KEYWORD] for p in response.results)
+    assert all(p.full_content == '店铺\n店铺标准作业说明。' and p.section_path and p.source_branches == [B.VECTOR, B.KEYWORD] for p in response.results)
 
 
 async def test_02_shadow(retrieval, manager, published, req, search_req, monkeypatch):
@@ -132,7 +132,7 @@ def test_18_rrf(retrieval):
 
 
 async def test_19_dedup(retrieval, manager, req, search_req):
-    await manager.sync_document(req.model_copy(update={'content': '# 门店\n\n' + '标准操作。' * 100}))
+    await manager.sync_document(req.model_copy(update={'content': '# 店铺\n\n' + '标准操作。' * 100}))
     result = await retrieval.search(search_req)
     assert len(manager.vector_store.data) > len(result.results)
     assert len(result.results) == len({p.parent_id for p in result.results})
@@ -225,8 +225,8 @@ async def test_adapter_prefilters_before_top_k(retrieval, manager, published, ad
     for index, changes in enumerate([{'dept_id': 'secret'}, {'allowed_roles': []},
             {'allowed_roles': ['finance']}, {'version': 2}, {'doc_id': 'secret'}]):
         adapter.children[f'decoy{index}'] = sample.model_copy(update={
-            'child_id': f'decoy{index}', 'child_text': '门店' * 1000, 'embedding': [1000.] * 8, **changes})
-    query = [1.] * 8 if adapter_name == 'vector_search' else '门店'
+            'child_id': f'decoy{index}', 'child_text': '店铺' * 1000, 'embedding': [1000.] * 8, **changes})
+    query = [1.] * 8 if adapter_name == 'vector_search' else '店铺'
     filt = RetrievalFilter(dept_id='ops', roles=['manager'], doc_versions={'sop': 1, 'other': 1})
     result = await adapter.search(query, filt, 1)
     assert len(result) == 1 and not result[0].child_id.startswith('decoy') and result[0].rank == 1

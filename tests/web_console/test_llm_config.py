@@ -36,12 +36,12 @@ STATUS = "/api/console/status"
 ONLINE_BODY = {"mode": "online", "base_url": GATEWAY, "model": "unit-model", "api_key": SECRET, "timeout_seconds": 5}
 EXPENSE = """单据类型：报销单
 单据编号：EXP-LLM-001
-门店编码：ST_0101
+店铺编码：ST_0101
 申请人：store_clerk_01 | store_ops | store_clerk
 提交时间：2026-11-05 10:00
-报销事由：门店日常清洁耗材采购
-发票：INV20261104001 | 增值税普通发票 | 2026-11-04 | 杭州清洁用品有限公司 | 91330100MA12345678
-明细：日常耗材 | 清洁用品 | 2 | 件 | 100.00 | 0.13 | INV20261104001 | 2026-11-04
+报销事由：仓库日常打包耗材采购
+发票：INV20261104001 | 增值税普通发票 | 2026-11-04 | 杭州示例包装材料有限公司 | 91330100MA12345678
+明细：日常耗材 | 快递纸箱 | 2 | 件 | 100.00 | 0.13 | INV20261104001 | 2026-11-04
 附件：发票、采购清单、验收记录
 申报总额：226.00"""
 
@@ -299,7 +299,7 @@ async def test_connectivity_failures_are_clear_counted_and_redacted(reply, fragm
 async def test_offline_agents_never_touch_transport():
     gateway = Gateway(completion("ok"))
     async with app_client(gateway) as http:
-        response = await http.post("/api/console/bi/analyze", json={"persona_id": "hq_analyst", "question": "各大区原料损耗率排行"})
+        response = await http.post("/api/console/bi/analyze", json={"persona_id": "hq_analyst", "question": "各大区商品货损率排行"})
         assert response.status_code == 200 and gateway.requests == []
         assert (await http.get(STATUS)).json()["external_calls"] == 0
 
@@ -419,7 +419,7 @@ async def test_sop_online_flow_counts_each_model_call():
 async def test_sop_gateway_failure_returns_clear_error():
     async with app_client(Gateway(httpx.Response(500))) as http:
         await http.put(CONFIG, json=ONLINE_BODY)
-        response = await http.post("/api/console/sop/turn", json={"persona_id": "store_clerk", "session_id": None, "message": "制冰机不制冰"})
+        response = await http.post("/api/console/sop/turn", json={"persona_id": "store_clerk", "session_id": None, "message": "热敏打单机不出纸"})
         assert response.status_code == 503 and response.json()["error"]["error_code"] == "CHAT_MODEL_UNAVAILABLE"
         status = (await http.get(STATUS)).json()
         assert status["external_calls"] == 1 and "HTTP 500" in status["last_error"]
@@ -444,7 +444,7 @@ async def test_bi_online_flow_runs_guard_sandbox_and_counts_calls():
 async def test_bi_gateway_timeout_returns_clear_error():
     async with app_client(Gateway(httpx.ReadTimeout("slow"))) as http:
         await http.put(CONFIG, json=ONLINE_BODY)
-        response = await http.post("/api/console/bi/analyze", json={"persona_id": "hq_analyst", "question": "各大区原料损耗率排行"})
+        response = await http.post("/api/console/bi/analyze", json={"persona_id": "hq_analyst", "question": "各大区商品货损率排行"})
         assert response.status_code == 503 and response.json()["error"]["error_code"] == "SQL_MODEL_UNAVAILABLE"
 
 
@@ -461,7 +461,7 @@ async def test_finance_gateway_failure_degrades_to_human_review():
 
 async def test_finance_model_input_is_redacted():
     phone, card = "13800138000", "6222020200112233446"
-    text = EXPENSE.replace("门店日常清洁耗材采购", f"门店耗材采购，手机 {phone}，垫付卡 {card}")
+    text = EXPENSE.replace("仓库日常打包耗材采购", f"打包耗材采购，手机 {phone}，垫付卡 {card}")
     gateway = Gateway(completion({"claims": [], "reason_matches_categories": True, "summary": "无风险"}))
     async with app_client(gateway) as http:
         await http.put(CONFIG, json=ONLINE_BODY)
@@ -477,7 +477,7 @@ async def test_switching_back_offline_restores_deterministic_answers():
     async with app_client(gateway) as http:
         await http.put(CONFIG, json=ONLINE_BODY)
         await http.put(CONFIG, json={"mode": "offline"})
-        response = await http.post("/api/console/bi/analyze", json={"persona_id": "hq_analyst", "question": "各大区原料损耗率排行"})
+        response = await http.post("/api/console/bi/analyze", json={"persona_id": "hq_analyst", "question": "各大区商品货损率排行"})
         assert response.status_code == 200 and gateway.requests == []
 
 
