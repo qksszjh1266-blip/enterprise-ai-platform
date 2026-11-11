@@ -5,6 +5,7 @@ import { createBi } from './modules/bi.js';
 import { createFinance } from './modules/finance.js';
 import { createKnowledge } from './modules/knowledge.js';
 import { createEval } from './modules/eval.js';
+import { createLlmDialog } from './modules/llm_config.js';
 
 const MODULES = [
   { id: 'sop', label: '门店 SOP 督导助手', desc: '多轮问答 · 强制溯源 · 排障转报修', icon: 'chat', create: createSop },
@@ -15,9 +16,13 @@ const MODULES = [
 ];
 
 const THEME_KEY = 'console-theme';
+const STATUS_POLL_MS = 1500;
+const OFFLINE_FOOT = '本地离线演示环境。所有制度、经营数据与单据均为虚构，模型为确定性适配器。';
 const instances = new Map();
 let current = null;
 let status = null;
+let llmDialog = null;
+let envSignature = '';
 
 const $ = (id) => document.getElementById(id);
 
@@ -44,13 +49,32 @@ function setDrawer(moduleId, subtitle, nodes) {
 }
 
 function renderEnv() {
-  clear($('env-status'),
-    h('span', { class: 'env-chip' }, h('i', { class: 'env-dot' }), h('b', null, status.mode)),
-    h('span', { class: 'env-chip' }, '模型 ', h('b', null, '本地确定性适配器')),
-    h('span', { class: 'env-chip' }, '知识库 ', h('b', null, `${status.documents} 文档 / ${status.parents} 父块 / ${status.children} 子块`)),
-    h('span', { class: 'env-chip' }, '只读沙箱 ', h('b', null, `${status.tables} 表`)),
-    h('span', { class: 'env-chip' }, '基准日 ', h('b', null, status.as_of_date)),
-    h('span', { class: 'env-chip' }, '外部调用 ', h('b', null, status.external_calls)));
+  // 计数单独更新：轮询时不重建胶囊，避免键盘焦点丢失。
+  const signature = JSON.stringify([status.online, status.mode, status.model, status.gateway_host, status.last_error, status.documents, status.parents, status.children]);
+  if (signature !== envSignature) {
+    envSignature = signature;
+    const dot = !status.online ? 'offline' : status.last_error ? 'warn' : 'online';
+    const title = status.last_error ? `最近一次调用失败：${status.last_error}` : '打开模型配置';
+    const chip = (...children) => h('button', { class: 'env-chip', type: 'button', title, 'aria-haspopup': 'dialog', onclick: () => llmDialog.open() }, children);
+    clear($('env-status'),
+      chip(h('i', { class: `env-dot ${dot}` }), h('b', null, status.mode)),
+      chip('模型 ', h('b', { class: 'env-model' }, status.online ? status.model : '本地确定性适配器')),
+      h('span', { class: 'env-chip' }, '知识库 ', h('b', null, `${status.documents} 文档 / ${status.parents} 父块 / ${status.children} 子块`)),
+      h('span', { class: 'env-chip' }, '只读沙箱 ', h('b', null, `${status.tables} 表`)),
+      h('span', { class: 'env-chip' }, '基准日 ', h('b', null, status.as_of_date)),
+      h('span', { class: 'env-chip' }, '外部调用 ', h('b', { id: 'external-calls' }, status.external_calls)));
+    $('nav-foot').textContent = status.online
+      ? `在线推理环境。模型调用发往 ${status.gateway_host}（${status.model}），检索、SQL 沙箱与财务规则仍在本地执行；演示数据均为虚构。`
+      : OFFLINE_FOOT;
+  }
+  $('external-calls').textContent = status.external_calls;
+}
+
+async function refreshStatus() {
+  const result = await get('/api/console/status');
+  if (!result.ok) return;
+  Object.assign(status, result.data);
+  renderEnv();
 }
 
 function activate(id) {
@@ -84,7 +108,9 @@ async function boot() {
     return;
   }
   status = result.data;
+  llmDialog = createLlmDialog(refreshStatus);
   renderEnv();
+  setInterval(() => { if (status.online && !document.hidden) refreshStatus(); }, STATUS_POLL_MS);
   window.addEventListener('hashchange', () => activate(location.hash.slice(1)));
   activate(location.hash.slice(1));
 }

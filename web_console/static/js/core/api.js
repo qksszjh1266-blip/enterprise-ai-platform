@@ -14,6 +14,8 @@ async function request(path, options) {
 }
 
 export const post = (path, body) => request(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+export const put = (path, body) => request(path, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+export const del = (path) => request(path, { method: 'DELETE' });
 export const get = (path) => request(path);
 
 /** 把校验错误等响应统一成 ToolErrorResponse 结构。 */

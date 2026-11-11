@@ -26,13 +26,13 @@
 │   ├── supply_chain_bi/           # 语义目录、AST、只读 SQL、预警
 │   ├── finance_audit/             # Decimal 勾稽、脱敏、引用、审批路由
 │   └── workflows/                # 三份 Dify / HiAgent 编排结构说明
-├── tests/                        # 717 项参数化展开后的 pytest 测试
+├── tests/                        # 796 项参数化展开后的 pytest 测试
 │   ├── parser_chunker/            # 15 项
 │   ├── storage_sync/              # 28 项
 │   ├── retrieval_engine/          # 44 项
 │   ├── mcp_server/                # 16 项
 │   ├── eval_platform/             # 95 项
-│   ├── web_console/               # 71 项
+│   ├── web_console/               # 150 项
 │   └── agent_matrix/              # SOP 106 / BI 183 / 财务 159
 │       ├── store_sop/
 │       ├── supply_chain_bi/data/  # BI 黄金集、报告、对照 JSON
@@ -111,7 +111,7 @@ uv sync --frozen --python 3.12
 uv run pytest -v
 ```
 
-全量测试包含 717 项用例，覆盖数据发布、检索、评测、三个业务智能体与工作台。契约测试使用 `main` / `HEAD` 检查公共接口和上游模块，因此需要完整 Git 仓库，并从已提交的干净工作区运行。测试报告写入 pytest 临时目录，不覆盖已提交的评测报告。
+全量测试包含 796 项用例，覆盖数据发布、检索、评测、三个业务智能体与工作台。契约测试使用 `main` / `HEAD` 检查公共接口和上游模块，因此需要完整 Git 仓库，并从已提交的干净工作区运行。测试报告写入 pytest 临时目录，不覆盖已提交的评测报告。
 
 如需重新生成检索、SOP 和供应链报告，可在独立克隆中运行以下脚本；默认输出会更新克隆内的报告与 JSON：
 
@@ -148,7 +148,16 @@ uv run python -m web_console
 | 知识数据中台检索器 | 按部门与角色检索，展示召回分值、父子块对照与跨部门过滤效果 |
 | 评测中台与门禁看板 | 读取已提交的评测报告，展示各智能体指标、失败归因与回归门禁状态 |
 
-运行时真实调用 `VersionedSyncManager`、`HybridRetrievalService`、`SqlStaticGuard`、`SqliteReadOnlySandbox`、`DeterministicFinanceRuleEngine`、`PiiRedactor` 与三大智能体，四个应用工厂挂载在 `/gateway/` 下，由演示网关清洗外部身份头并按所选人员注入可信身份。语言模型位置使用 `web_console/adapters.py` 中的确定性适配器，检索使用字符二元组特征的内存索引，供应链数据为启动时写入临时目录的虚构样本，因此界面结果用于演示链路和安全控制，不代表生产模型效果。
+### 在线模型模式
+
+未配置 API Key 时工作台保持离线确定性模式。需要接入真实模型时有两种方式，网关须兼容标准 `/chat/completions` 协议：
+
+- 环境变量或 `.env`：复制 `.env.example` 为 `.env`，填写 `LLM_API_KEY`、`LLM_BASE_URL`、`LLM_MODEL`、`LLM_TIMEOUT_SECONDS`，系统环境变量优先于 `.env`。
+- 页面配置：点击顶部的模式或模型胶囊打开配置抽屉，可测试连通性并保存生效。页面输入的 Key 只保存在服务进程内存中，重启或清空后回到离线模式（已配置环境变量时，重启会按环境变量重新进入在线模式）。
+
+在线模式只替换三大智能体的模型端口，检索、SQL 守卫与沙箱、财务规则和 PII 脱敏仍在本地执行。用户问题、制度片段、语义字典、查询结果和脱敏后的单据会发送到所配置的网关。顶部“外部调用”统计每一次真实发出的请求，包括失败请求和连通性测试。
+
+运行时真实调用 `VersionedSyncManager`、`HybridRetrievalService`、`SqlStaticGuard`、`SqliteReadOnlySandbox`、`DeterministicFinanceRuleEngine`、`PiiRedactor` 与三大智能体，四个应用工厂挂载在 `/gateway/` 下，由演示网关清洗外部身份头并按所选人员注入可信身份。语言模型位置默认使用 `web_console/adapters.py` 中的确定性适配器，检索使用字符二元组特征的内存索引，供应链数据为启动时写入临时目录的虚构样本，因此界面结果用于演示链路和安全控制，不代表生产模型效果。
 
 ## OpenAPI 与平台对接
 

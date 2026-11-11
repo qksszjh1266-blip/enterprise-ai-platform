@@ -1,18 +1,22 @@
-"""离线演示运行时：加载知识库、挂载只读沙箱，并把三大智能体装配到真实端口上。"""
+"""工作台运行时：加载知识库、挂载只读沙箱，并把三大智能体装配到真实端口上；模型端口可在离线与在线间切换。"""
 from __future__ import annotations
 
 import tempfile
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
+import httpx
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
 
 from agent_matrix.finance_audit.agent import FinanceAuditAgent
+from agent_matrix.finance_audit.models import FinanceAuditConfig
 from agent_matrix.finance_audit.redaction import PiiRedactor
 from agent_matrix.store_sop.agent import StoreSopAgent
+from agent_matrix.store_sop.models import StoreAgentConfig
 from agent_matrix.store_sop.offline import InMemorySessionStore, InMemoryTicketPort
 from agent_matrix.supply_chain_bi.agent import SupplyChainBIAgent
+from agent_matrix.supply_chain_bi.models import SupplyChainAgentConfig
 from agent_matrix.supply_chain_bi.sandbox_sqlite import SqliteReadOnlySandbox
 from data_platform.adapters.memory import InMemoryVectorSearch
 from data_platform.parser_chunker.markdown_chunker import HierarchicalMarkdownChunker
@@ -24,11 +28,15 @@ from web_console.adapters import (
     DemoSqlModel, DemoStoreChatModel, LocalHashEmbedder, TracingSearch,
 )
 from web_console.demo_data.supply_seed import seed_supply_chain_database
+from web_console.llm_gateway import CallMeter, ChatCompletionsClient, OnlineFinanceModel, OnlineSqlModel, OnlineStoreChatModel
+from web_console.llm_settings import LlmSettings
 
 ROOT = Path(__file__).resolve().parents[1]
 MOCK_DOCS = ROOT / "mock_docs"
 CONTRACT_POLICY = Path(__file__).with_name("demo_data") / "franchise_contract_policy.md"
 SIMULATED_TABLES = 9
+# 智能体的模型预算略大于网关超时，使超时优先由适配器报告明确原因。
+AGENT_TIMEOUT_MARGIN_SECONDS = 2.0
 
 
 class MemoryIndex:
@@ -99,15 +107,49 @@ class ConsoleRuntime:
     retrieval: HybridRetrievalService
     index: MemoryIndex
     sandbox: SqliteReadOnlySandbox
-    store_agent: StoreSopAgent
-    bi_agent: SupplyChainBIAgent
-    finance_agent: FinanceAuditAgent
+    session_store: InMemorySessionStore
+    ticket_port: InMemoryTicketPort
+    scope_resolver: DemoScopeResolver
+    ledger: DemoClaimLedger
     approval_gateway: DemoApprovalGateway
     redactor: PiiRedactor
     documents: int
     parents: int
+    http: httpx.AsyncClient
+    meter: CallMeter = field(default_factory=CallMeter)
+    env_settings: LlmSettings | None = None
+    web_settings: LlmSettings | None = None
+    active_settings: LlmSettings | None = None
+    store_agent: StoreSopAgent = field(init=False)
+    bi_agent: SupplyChainBIAgent = field(init=False)
+    finance_agent: FinanceAuditAgent = field(init=False)
+
+    def apply_llm(self, settings: LlmSettings | None) -> None:
+        """按配置重建三大智能体；会话、工单与台账沿用同一实例，进行中的请求继续使用旧智能体完成。"""
+        if settings is None:
+            store_model, sql_model, finance_model = DemoStoreChatModel(), DemoSqlModel(), DemoFinanceModel()
+            store_config = bi_config = finance_config = None
+        else:
+            client = ChatCompletionsClient(settings, self.http, self.meter)
+            store_model, sql_model, finance_model = OnlineStoreChatModel(client), OnlineSqlModel(client), OnlineFinanceModel(client)
+            budget = settings.timeout_seconds + AGENT_TIMEOUT_MARGIN_SECONDS
+            store_config = StoreAgentConfig(model_timeout_s=budget)
+            bi_config = SupplyChainAgentConfig(model_timeout_s=budget)
+            finance_config = FinanceAuditConfig(model_timeout_s=budget)
+        self.store_agent = StoreSopAgent(chat_model=store_model, retrieval=self.retrieval, session_store=self.session_store,
+                                         ticket_port=self.ticket_port, config=store_config)
+        self.bi_agent = SupplyChainBIAgent(sql_model=sql_model, sandbox=self.sandbox, scope_resolver=self.scope_resolver, config=bi_config)
+        self.finance_agent = FinanceAuditAgent(review_model=finance_model, ledger=self.ledger, approval_gateway=self.approval_gateway,
+                                               retrieval=self.retrieval, redactor=self.redactor, config=finance_config)
+        self.active_settings = settings
+        self.meter.last_error = None
+
+    def stored_settings_for(self, base_url: str) -> LlmSettings | None:
+        """返回同一网关地址下已保存的配置；密钥绝不复用到其他地址，防止被转发给非预期的服务。"""
+        return next((s for s in (self.web_settings, self.env_settings) if s is not None and s.base_url == base_url), None)
 
     async def aclose(self) -> None:
+        await self.http.aclose()
         await self.manager.aclose()
         await self.engine.dispose()
         self.workdir.cleanup()
@@ -117,7 +159,7 @@ class ConsoleRuntime:
             return list((await session.scalars(select(KBDocument).order_by(KBDocument.dept_id, KBDocument.doc_id))).all())
 
 
-async def build_runtime() -> ConsoleRuntime:
+async def build_runtime(llm_settings: LlmSettings | None = None, transport: httpx.AsyncBaseTransport | None = None) -> ConsoleRuntime:
     workdir = tempfile.TemporaryDirectory(prefix="enterprise-console-")
     base = Path(workdir.name)
     engine = create_async_engine(f"sqlite+aiosqlite:///{base / 'knowledge.sqlite'}")
@@ -145,12 +187,12 @@ async def build_runtime() -> ConsoleRuntime:
 
     sandbox = SqliteReadOnlySandbox(await seed_supply_chain_database(base / "supply_chain.sqlite"))
     approval_gateway, redactor = DemoApprovalGateway(), PiiRedactor()
-    return ConsoleRuntime(
+    # 注入传输层时关闭环境代理探测，否则代理挂载会绕过注入的传输层。
+    http = httpx.AsyncClient(transport=transport, trust_env=transport is None, follow_redirects=False)
+    runtime = ConsoleRuntime(
         workdir=workdir, engine=engine, session_factory=factory, manager=manager, retrieval=retrieval, index=keyword_index,
-        sandbox=sandbox,
-        store_agent=StoreSopAgent(chat_model=DemoStoreChatModel(), retrieval=retrieval,
-                                  session_store=InMemorySessionStore(), ticket_port=InMemoryTicketPort()),
-        bi_agent=SupplyChainBIAgent(sql_model=DemoSqlModel(), sandbox=sandbox, scope_resolver=DemoScopeResolver()),
-        finance_agent=FinanceAuditAgent(review_model=DemoFinanceModel(), ledger=DemoClaimLedger(),
-                                        approval_gateway=approval_gateway, retrieval=retrieval, redactor=redactor),
-        approval_gateway=approval_gateway, redactor=redactor, documents=len(corpus), parents=parents or 0)
+        sandbox=sandbox, session_store=InMemorySessionStore(), ticket_port=InMemoryTicketPort(), scope_resolver=DemoScopeResolver(),
+        ledger=DemoClaimLedger(), approval_gateway=approval_gateway, redactor=redactor, documents=len(corpus), parents=parents or 0,
+        http=http, env_settings=llm_settings)
+    runtime.apply_llm(llm_settings)
+    return runtime
