@@ -26,16 +26,18 @@
 │   ├── supply_chain_bi/           # 语义目录、AST、只读 SQL、预警
 │   ├── finance_audit/             # Decimal 勾稽、脱敏、引用、审批路由
 │   └── workflows/                # 三份 Dify / HiAgent 编排结构说明
-├── tests/                        # 646 项参数化展开后的 pytest 测试
+├── tests/                        # 717 项参数化展开后的 pytest 测试
 │   ├── parser_chunker/            # 15 项
 │   ├── storage_sync/              # 28 项
 │   ├── retrieval_engine/          # 44 项
 │   ├── mcp_server/                # 16 项
 │   ├── eval_platform/             # 95 项
+│   ├── web_console/               # 71 项
 │   └── agent_matrix/              # SOP 106 / BI 183 / 财务 159
 │       ├── store_sop/
 │       ├── supply_chain_bi/data/  # BI 黄金集、报告、对照 JSON
 │       └── finance_audit/data/    # 财务单据、黄金集、制度与报告
+├── web_console/                   # 统一管控与演练工作台（FastAPI 入口、离线运行时、原生前端）
 ├── mock_docs/                     # 虚构培训制度与演示 SOP
 └── pyproject.toml / uv.lock       # Python 依赖与锁文件
 ```
@@ -109,7 +111,7 @@ uv sync --frozen --python 3.12
 uv run pytest -v
 ```
 
-全量测试包含 646 项用例，覆盖数据发布、检索、评测与三个业务智能体。契约测试使用 `main` / `HEAD` 检查公共接口和上游模块，因此需要完整 Git 仓库，并从已提交的干净工作区运行。测试报告写入 pytest 临时目录，不覆盖已提交的评测报告。
+全量测试包含 717 项用例，覆盖数据发布、检索、评测、三个业务智能体与工作台。契约测试使用 `main` / `HEAD` 检查公共接口和上游模块，因此需要完整 Git 仓库，并从已提交的干净工作区运行。测试报告写入 pytest 临时目录，不覆盖已提交的评测报告。
 
 如需重新生成检索、SOP 和供应链报告，可在独立克隆中运行以下脚本；默认输出会更新克隆内的报告与 JSON：
 
@@ -126,6 +128,27 @@ uv run pytest -v tests/agent_matrix/finance_audit/test_eval_e2e.py --basetemp=/t
 ```
 
 先运行全量测试，再生成报告，避免报告变化影响上游模块的无侵入性检查。离线实验不需要外部模型密钥或 Milvus / Elasticsearch 服务；报告延迟和时间戳随运行环境变化。
+
+## 可视化工作台
+
+`web_console/` 把上述模块装配成一个本地可运行的中后台界面，无需外部模型密钥、Milvus / Elasticsearch 或前端构建链，页面资源全部来自本地，断网可用：
+
+```bash
+uv sync --frozen --python 3.12
+uv run python -m web_console
+```
+
+启动后访问 <http://127.0.0.1:8000/>。左侧切换模块，顶部显示运行环境，右侧“引擎透视”抽屉展示每次调用的内部状态。每个模块顶部提供 3 个一键用例。
+
+| 模块 | 演示内容 |
+|---|---|
+| 门店 SOP 督导助手 | 多轮对话、员工身份切换、会话重置；展示溯源引用、`ExtractedSlots`、`LoopStep` 轨迹、`DegradedReason` 与 `trace_id` |
+| 供应链经营分析 | 自然语言生成 SQL、sqlglot 放行或拦截徽章、只读沙箱结果表、库存预警；可演示多语句注入拦截 |
+| 财务与合同预审 | 报销单或合同文本预审，脱敏前后对比、Decimal 规则命中明细、人工审批工单回执 |
+| 知识数据中台检索器 | 按部门与角色检索，展示召回分值、父子块对照与跨部门过滤效果 |
+| 评测中台与门禁看板 | 读取已提交的评测报告，展示各智能体指标、失败归因与回归门禁状态 |
+
+运行时真实调用 `VersionedSyncManager`、`HybridRetrievalService`、`SqlStaticGuard`、`SqliteReadOnlySandbox`、`DeterministicFinanceRuleEngine`、`PiiRedactor` 与三大智能体，四个应用工厂挂载在 `/gateway/` 下，由演示网关清洗外部身份头并按所选人员注入可信身份。语言模型位置使用 `web_console/adapters.py` 中的确定性适配器，检索使用字符二元组特征的内存索引，供应链数据为启动时写入临时目录的虚构样本，因此界面结果用于演示链路和安全控制，不代表生产模型效果。
 
 ## OpenAPI 与平台对接
 

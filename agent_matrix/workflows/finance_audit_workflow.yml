@@ -33,7 +33,7 @@ app:
   mode: workflow
   name: 财务合规预审助手
   description: 门店费用报销与加盟采购合同的合规预审（隐私脱敏 · Decimal 金额勾稽 · 重复发票与拆单拦截 · 高风险转人工）
-  icon: "🧾"
+  icon: "receipt"
   use_icon_as_answer_icon: false
 
 dependencies:
@@ -114,11 +114,11 @@ workflow:
         template: |
           {{ body.conclusion }}
 
-          **金额勾稽**：申报 {{ body.reconciliation.declared_total }} / 核算 {{ body.reconciliation.computed_total }} / 偏差 {{ body.reconciliation.total_deviation }}{% if body.reconciliation.has_duplicate_invoice %}　⚠ 重复发票{% endif %}{% if body.reconciliation.split_suspected %}　⚠ 疑似拆单{% endif %}
+          **金额勾稽**：申报 {{ body.reconciliation.declared_total }} / 核算 {{ body.reconciliation.computed_total }} / 偏差 {{ body.reconciliation.total_deviation }}{% if body.reconciliation.has_duplicate_invoice %}　[风险] 重复发票{% endif %}{% if body.reconciliation.split_suspected %}　[风险] 疑似拆单{% endif %}
 
           {% if body.findings %}| 风险等级 | 编码 | 说明 | 制度依据 |
           |---|---|---|---|
-          {% for f in body.findings %}| {{ f.risk_level }}{% if f.is_redline %} 🔴红线{% endif %} | {{ f.code }} | {{ f.detail }} | {% for c in f.citations %}{{ c.section_path }}{% if not loop.last %}；{% endif %}{% endfor %} |
+          {% for f in body.findings %}| {{ f.risk_level }}{% if f.is_redline %} [红线]{% endif %} | {{ f.code }} | {{ f.detail }} | {% for c in f.citations %}{{ c.section_path }}{% if not loop.last %}；{% endif %}{% endfor %} |
           {% endfor %}{% endif %}
 
       - id: end_auto_approve

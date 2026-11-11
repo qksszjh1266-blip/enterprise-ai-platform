@@ -35,7 +35,7 @@ app:
   mode: advanced-chat
   name: 门店SOP督导助手
   description: 饮品制作 / 设备排障多轮问答；强制溯源引用；排障失败转人工报修
-  icon: "🧋"
+  icon: "bubble_tea"
   use_icon_as_answer_icon: false
 
 dependencies:

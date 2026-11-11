@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>连锁餐饮企业 AI 平台 · 统一管控与演练工作台</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/static/css/console.css">
+</head>
+<body>
+  <div class="app" id="app">
+    <aside class="nav" aria-label="主导航">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <div><strong>企业 AI 平台</strong><small>统一管控与演练工作台</small></div>
+      </div>
+      <nav id="nav-list"></nav>
+      <p class="nav-foot">本地离线演示环境。所有制度、经营数据与单据均为虚构，模型为确定性适配器。</p>
+    </aside>
+    <header class="topbar">
+      <div class="crumb"><span id="crumb-title">工作台</span><small id="crumb-desc"></small></div>
+      <div class="env" id="env-status" aria-live="polite"></div>
+      <div class="top-actions">
+        <button class="icon-btn" id="theme-toggle" type="button" title="切换深浅色" aria-label="切换深浅色"></button>
+        <button class="icon-btn" id="drawer-toggle" type="button" title="引擎透视" aria-label="展开或收起引擎透视抽屉"></button>
+      </div>
+    </header>
+    <main class="workspace" id="workspace"></main>
+    <aside class="drawer" id="drawer" aria-label="引擎透视">
+      <div class="drawer-head"><div><strong>引擎透视</strong><small id="drawer-sub"></small></div><button class="link drawer-close" id="drawer-close" type="button">收起</button></div>
+      <div class="drawer-body" id="drawer-body"></div>
+    </aside>
+  </div>
+  <div class="tooltip" id="tooltip" role="status" hidden></div>
+  <noscript>工作台需要启用 JavaScript。</noscript>
+  <script type="module" src="/static/js/main.js"></script>
+</body>
+</html>

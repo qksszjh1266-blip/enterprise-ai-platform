@@ -32,7 +32,7 @@ app:
   mode: workflow
   name: 供应链经营分析助手
   description: 库存 / 安全库存缺口 / 效期周转 / 原料损耗 / 门店杯量的自然语言分析与补货调拨预警（受控只读 SQL）
-  icon: "📦"
+  icon: "package"
   use_icon_as_answer_icon: false
 
 dependencies:
