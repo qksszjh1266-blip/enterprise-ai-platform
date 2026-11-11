@@ -1,0 +1,174 @@
+{
+  "baseline_run_id": "baseline",
+  "candidate_run_id": "numeric_candidate",
+  "baseline_version": "baseline",
+  "candidate_version": "numeric_candidate",
+  "suite_comparable": true,
+  "metric_deltas": [
+    {
+      "metric": "retrieval_hit_rate",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "abs_delta": 0.0,
+      "rel_delta_pct": 0.0,
+      "higher_is_better": true,
+      "tolerance": 0.02,
+      "regressed": false
+    },
+    {
+      "metric": "mean_recall_at_k",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "abs_delta": 0.0,
+      "rel_delta_pct": 0.0,
+      "higher_is_better": true,
+      "tolerance": 0.03,
+      "regressed": false
+    },
+    {
+      "metric": "mean_mrr",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "abs_delta": 0.0,
+      "rel_delta_pct": 0.0,
+      "higher_is_better": true,
+      "tolerance": 0.03,
+      "regressed": false
+    },
+    {
+      "metric": "answer_accuracy_rate",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "abs_delta": 0.0,
+      "rel_delta_pct": 0.0,
+      "higher_is_better": true,
+      "tolerance": 0.03,
+      "regressed": false
+    },
+    {
+      "metric": "mean_faithfulness",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "abs_delta": 0.0,
+      "rel_delta_pct": 0.0,
+      "higher_is_better": true,
+      "tolerance": 0.03,
+      "regressed": false
+    },
+    {
+      "metric": "mean_satisfaction",
+      "baseline": 5.0,
+      "candidate": 5.0,
+      "abs_delta": 0.0,
+      "rel_delta_pct": 0.0,
+      "higher_is_better": true,
+      "tolerance": 0.2,
+      "regressed": false
+    },
+    {
+      "metric": "latency_p50_ms",
+      "baseline": 126.88464199891314,
+      "candidate": 124.78398700113758,
+      "abs_delta": -2.100654997775564,
+      "rel_delta_pct": -1.6555628519593075,
+      "higher_is_better": false,
+      "tolerance": null,
+      "regressed": false
+    },
+    {
+      "metric": "latency_p95_ms",
+      "baseline": 166.83512699819403,
+      "candidate": 181.14156239898875,
+      "abs_delta": 14.306435400794726,
+      "rel_delta_pct": 8.57519376057393,
+      "higher_is_better": false,
+      "tolerance": 1668.3512699819403,
+      "regressed": false
+    },
+    {
+      "metric": "degraded_rate",
+      "baseline": 0.0,
+      "candidate": 0.7333333333333333,
+      "abs_delta": 0.7333333333333333,
+      "rel_delta_pct": null,
+      "higher_is_better": false,
+      "tolerance": null,
+      "regressed": false
+    },
+    {
+      "metric": "error_rate",
+      "baseline": 0.0,
+      "candidate": 0.0,
+      "abs_delta": 0.0,
+      "rel_delta_pct": null,
+      "higher_is_better": false,
+      "tolerance": null,
+      "regressed": false
+    },
+    {
+      "metric": "acl_block_rate",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "abs_delta": 0.0,
+      "rel_delta_pct": 0.0,
+      "higher_is_better": true,
+      "tolerance": null,
+      "regressed": false
+    }
+  ],
+  "gate_passed": false,
+  "violations": [
+    {
+      "code": "error_rate_exceeded",
+      "metric": "degraded_rate",
+      "message": "degraded_rate 73.3% 超过上限 5.0%"
+    },
+    {
+      "code": "metric_regression",
+      "metric": null,
+      "message": "新增失败 3 条，超过上限 0"
+    }
+  ],
+  "blocking_reasons": [
+    "degraded_rate 73.3% 超过上限 5.0%",
+    "新增失败 3 条，超过上限 0"
+  ],
+  "newly_failed_sample_ids": [
+    "loss_east",
+    "loss_format",
+    "loss_single"
+  ],
+  "fixed_sample_ids": [],
+  "top_bad_cases": [
+    {
+      "sample_id": "loss_east",
+      "scenario": "supply_chain",
+      "question": "近30天柠檬损耗率按仓库排",
+      "failure_category": "incomplete_answer",
+      "baseline_category": "none",
+      "newly_failed": true,
+      "severity": 45,
+      "detail": "hit=1.0; recall=1.0; mrr=1.0; faithfulness=1.0; accuracy=1.0; satisfaction=5.0; leaked_doc_ids=[]; ; accuracy: 规则裁判，非真人 / LLM 评价；文本与数值关键词命中率。; faithfulness: 规则裁判，非真人 / LLM 评价；按结果单元格数值容差核验。; satisfaction: 规则裁判，非真人 / LLM 评价；按数据分析可执行性量表。"
+    },
+    {
+      "sample_id": "loss_format",
+      "scenario": "supply_chain",
+      "question": "损耗率格式化对照",
+      "failure_category": "incomplete_answer",
+      "baseline_category": "none",
+      "newly_failed": true,
+      "severity": 45,
+      "detail": "hit=1.0; recall=1.0; mrr=1.0; faithfulness=1.0; accuracy=1.0; satisfaction=5.0; leaked_doc_ids=[]; ; accuracy: 规则裁判，非真人 / LLM 评价；文本与数值关键词命中率。; faithfulness: 规则裁判，非真人 / LLM 评价；按结果单元格数值容差核验。; satisfaction: 规则裁判，非真人 / LLM 评价；按数据分析可执行性量表。"
+    },
+    {
+      "sample_id": "loss_single",
+      "scenario": "supply_chain",
+      "question": "近30天柠檬报损率",
+      "failure_category": "incomplete_answer",
+      "baseline_category": "none",
+      "newly_failed": true,
+      "severity": 45,
+      "detail": "hit=1.0; recall=1.0; mrr=1.0; faithfulness=1.0; accuracy=1.0; satisfaction=5.0; leaked_doc_ids=[]; ; accuracy: 规则裁判，非真人 / LLM 评价；文本与数值关键词命中率。; faithfulness: 规则裁判，非真人 / LLM 评价；按结果单元格数值容差核验。; satisfaction: 规则裁判，非真人 / LLM 评价；按数据分析可执行性量表。"
+    }
+  ]
+}

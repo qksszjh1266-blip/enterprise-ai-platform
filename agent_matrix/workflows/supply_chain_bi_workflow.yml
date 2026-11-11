@@ -1,0 +1,172 @@
+# =============================================================================
+# 供应链库存预警与经营分析助手 —— 平台 Workflow 编排定义
+#
+# 定位：标准平台编排结构定义，字段布局对齐 Dify DSL（workflow 模式）便于在 Dify / HiAgent 上对照搭建；
+#       节点 id、模型凭据、工具 provider_id 需在目标平台生成。业务语义以 agent_matrix/supply_chain_bi/agent.py
+#       为唯一真源，本文件与之冲突时以代码为准。
+#
+# 只提供"薄编排"一种模式（与 门店 SOP 不同，**不提供**画布原生复刻）：
+#   Text-to-SQL 的安全性依赖三件必须在服务端闭环内的东西——SqlStaticGuard（AST 守卫）、WarehouseScopeFilter
+#   （可信行级范围 → 绑定参数）、ReadOnlySqlSandboxPort（连接层只读 + 超时 + 行数上限）。若在画布上用 LLM 节点
+#   生成 SQL 再经 HTTP 执行，等于把"裸 SQL 执行端点"暴露给编排层，任何画布改动都能绕过守卫。故 api.py 也刻意
+#   不提供 SQL 执行 / dry-run 端点。
+#
+# 工具导入：
+#   - 智能体：agent_matrix.supply_chain_bi.api.create_app().openapi()
+#       operationId: supply_chain_bi_analyze      POST /api/v1/agents/supply-chain-bi/analyze
+#       operationId: supply_chain_bi_get_catalog  GET  /api/v1/agents/supply-chain-bi/catalog
+#
+# 身份铁律：user_context 只能来自平台登录态 → 网关头（X-User-Id / X-Dept-Id / X-User-Roles）；
+#           大区 / 仓库范围由服务端 WarehouseScopeResolverPort 解析，编排层任何节点都不得传递 region / warehouse 范围。
+#
+# 冻结语义（随实现同步）：
+#   - 模型调用只有意图识别、SQL 生成、SQL 自纠错改写（≤ max_sql_attempts − 1 次）、结论归纳四类。
+#   - 守卫 FATAL（写操作 / 系统表 / 禁止表 / 敏感列 / 危险函数）与沙箱 READ_ONLY_VIOLATION 立即终止，不重试。
+#   - 库存预警由内置模板 + 规则引擎生成，不经模型；调拨建议的对手仓永远在调用者授权范围内。
+#   - 结论数值未通过一致性核验时自动退回确定性模板结论（narrative_source=template_fallback）。
+# =============================================================================
+
+kind: app
+version: "0.1.5"
+app:
+  mode: workflow
+  name: 供应链经营分析助手
+  description: 库存 / 安全库存缺口 / 效期周转 / 原料损耗 / 门店杯量的自然语言分析与补货调拨预警（受控只读 SQL）
+  icon: "📦"
+  use_icon_as_answer_icon: false
+
+dependencies:
+  - type: tool
+    provider: supply_chain_bi_agent             # 由 supply_chain_bi.api OpenAPI 导入的自定义工具
+    operations: [supply_chain_bi_analyze, supply_chain_bi_get_catalog]
+
+workflow:
+  environment_variables:
+    - {name: SUPPLY_CHAIN_BI_BASE_URL, value_type: string, value: "http://supply-chain-bi-agent.internal"}
+    - {name: RENDER_VERSION, value_type: string, value: "supply_chain_bi.v1", description: "须与 agent_matrix/supply_chain_bi/render.py 一致"}
+    - {name: CATALOG_VERSION, value_type: number, value: 1, description: "须与 semantic_layer.SUPPLY_CHAIN_CATALOG.catalog_version 一致"}
+
+  features:
+    opening_statement: 您好，我是供应链经营分析助手，可以查询您授权仓库的库存、安全库存缺口、临期批次、原料损耗率与门店销量。
+    suggested_questions:
+      - 我负责的仓库哪些原料已经跌破安全库存？
+      - 近 30 天柠檬的原料损耗率是多少？按仓库排一下
+      - 未来 7 天会过期但用不完的批次有哪些？
+    file_upload: {enabled: false}
+
+  graph:
+    nodes:
+      - id: start
+        type: start
+        title: 开始
+        variables:
+          - {variable: question, label: 分析问题, type: paragraph, required: true, max_length: 1000}
+          - {variable: as_of_date, label: 基准日（可选，YYYY-MM-DD）, type: text-input, required: false}
+          - {variable: include_alerts, label: 附带库存预警, type: select, options: ["true", "false"], default: "true", required: false}
+
+      - id: call_agent
+        type: http-request
+        title: 调用供应链 BI 智能体
+        method: POST
+        url: "{{#env.SUPPLY_CHAIN_BI_BASE_URL#}}/api/v1/agents/supply-chain-bi/analyze"
+        # X-Dept-Id / X-User-Roles：HiAgent / 自研网关透传；Dify 需在反向代理层注入（不得由 LLM 节点生成）
+        headers: |
+          X-User-Id: {{#sys.user_id#}}
+          X-Dept-Id: {{#sys.dept_id#}}
+          X-User-Roles: {{#sys.roles#}}
+        body:
+          type: json
+          note: "as_of_date 为空串时必须改发 null（date 类型不接受空串）；user_context 不传，由网关头注入；不得携带任何范围字段（extra=forbid → 422）"
+          data: |
+            {"question": "{{#start.question#}}", "as_of_date": "{{#start.as_of_date#}}",
+             "include_alerts": {{#start.include_alerts#}}, "trace_id": "{{#sys.workflow_run_id#}}"}
+        timeout: {connect: 3, read: 60}         # ≥ model_timeout_s × (2 + max_sql_attempts) 的经验上限
+        retry_config: {retry_enabled: true, max_retries: 1, retry_interval: 1000}   # 仅 retryable=True 的 502/503
+
+      - id: http_error_branch
+        type: if-else
+        title: 是否结构化错误
+        cases:
+          - case_id: tool_error
+            conditions: [{variable: call_agent.status_code, comparison_operator: ">=", value: 400}]
+
+      - id: answer_error
+        type: end
+        title: 错误提示
+        outputs:
+          - {variable: text, value_selector: [call_agent, body, hint]}           # ToolErrorResponse.hint，不展示堆栈
+          - {variable: error_code, value_selector: [call_agent, body, error_code]}
+
+      - id: route_stop_reason
+        type: if-else
+        title: 按 stop_reason 分流
+        cases:
+          - case_id: answered
+            conditions: [{variable: call_agent.body.stop_reason, comparison_operator: is, value: answered}]
+          - case_id: clarification
+            conditions: [{variable: call_agent.body.stop_reason, comparison_operator: is, value: clarification_requested}]
+        # 其余（refused / sql_retry_exhausted / data_source_unavailable）走 false 分支：直接输出 conclusion
+
+      - id: render_report
+        type: template-transform
+        title: 渲染分析报告
+        note: "纯模板，不调用 LLM；不得改写 conclusion 中的数字（数值核验已在服务端完成）"
+        variables:
+          - {variable: body, value_selector: [call_agent, body]}
+        template: |
+          {{ body.conclusion }}
+
+          **范围**：{{ body.scope_summary }}　**基准日**：{{ body.as_of_date }}{% if body.narrative_source == "template_fallback" %}　（结论为系统模板生成）{% endif %}
+
+          | {% for c in body.result_table.columns %}{{ c.name }} | {% endfor %}
+          |{% for c in body.result_table.columns %}---|{% endfor %}
+          {% for r in body.result_table.rows %}| {% for v in r %}{{ v }} | {% endfor %}
+          {% endfor %}
+          {% if body.result_table.source_truncated %}> 结果已截断，请增加筛选条件。{% endif %}
+
+          {% if body.alerts %}**库存预警（{{ body.alerts | length }}）**
+          {% for a in body.alerts %}- [{{ a.severity | upper }}] {{ a.warehouse_id }} · {{ a.material_name }}：{{ a.rationale }} → 建议 {{ a.recommended_action }} {{ a.suggested_qty }}{{ a.quantity_unit }}{% if a.counterpart_warehouse_id %}（对手仓 {{ a.counterpart_warehouse_id }}）{% endif %}
+          {% endfor %}{% endif %}
+          <details><summary>执行 SQL（脱敏）</summary>
+
+          ```sql
+          {{ body.final_sql }}
+          ```
+          </details>
+
+      - id: end_answered
+        type: end
+        title: 分析结果
+        outputs:
+          - {variable: text, value_selector: [render_report, output]}
+          - {variable: alerts, value_selector: [call_agent, body, alerts]}          # 下游可接补货 / 调拨工单节点
+          - {variable: token_cost, value_selector: [call_agent, body, token_cost]}
+
+      - id: end_clarification
+        type: end
+        title: 追问
+        outputs:
+          - {variable: text, value_selector: [call_agent, body, conclusion]}
+
+      - id: end_other
+        type: end
+        title: 拒答 / 未能完成
+        outputs:
+          - {variable: text, value_selector: [call_agent, body, conclusion]}
+          - {variable: stop_reason, value_selector: [call_agent, body, stop_reason]}
+
+    edges:
+      - {source: start, target: call_agent}
+      - {source: call_agent, target: http_error_branch}
+      - {source: http_error_branch, sourceHandle: tool_error, target: answer_error}
+      - {source: http_error_branch, sourceHandle: "false", target: route_stop_reason}
+      - {source: route_stop_reason, sourceHandle: answered, target: render_report}
+      - {source: render_report, target: end_answered}
+      - {source: route_stop_reason, sourceHandle: clarification, target: end_clarification}
+      - {source: route_stop_reason, sourceHandle: "false", target: end_other}
+
+# -----------------------------------------------------------------------------
+# 定时预警（可选，平台定时触发器）：每日 07:00 以各仓库督导身份调用同一 workflow，
+#   question = "我负责的仓库有哪些安全库存跌破和临期积压？"，include_alerts = true；
+#   alerts 非空时推送企业 IM。触发器须以真实督导账号身份经网关调用，**不得**使用全国范围的服务账号代跑后再分发。
+# -----------------------------------------------------------------------------

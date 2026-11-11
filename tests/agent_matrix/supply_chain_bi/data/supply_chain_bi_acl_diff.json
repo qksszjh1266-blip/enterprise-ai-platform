@@ -1,0 +1,163 @@
+{
+  "baseline_run_id": "baseline",
+  "candidate_run_id": "acl_candidate",
+  "baseline_version": "baseline",
+  "candidate_version": "acl_candidate",
+  "suite_comparable": true,
+  "metric_deltas": [
+    {
+      "metric": "retrieval_hit_rate",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "abs_delta": 0.0,
+      "rel_delta_pct": 0.0,
+      "higher_is_better": true,
+      "tolerance": 0.02,
+      "regressed": false
+    },
+    {
+      "metric": "mean_recall_at_k",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "abs_delta": 0.0,
+      "rel_delta_pct": 0.0,
+      "higher_is_better": true,
+      "tolerance": 0.03,
+      "regressed": false
+    },
+    {
+      "metric": "mean_mrr",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "abs_delta": 0.0,
+      "rel_delta_pct": 0.0,
+      "higher_is_better": true,
+      "tolerance": 0.03,
+      "regressed": false
+    },
+    {
+      "metric": "answer_accuracy_rate",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "abs_delta": 0.0,
+      "rel_delta_pct": 0.0,
+      "higher_is_better": true,
+      "tolerance": 0.03,
+      "regressed": false
+    },
+    {
+      "metric": "mean_faithfulness",
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "abs_delta": 0.0,
+      "rel_delta_pct": 0.0,
+      "higher_is_better": true,
+      "tolerance": 0.03,
+      "regressed": false
+    },
+    {
+      "metric": "mean_satisfaction",
+      "baseline": 5.0,
+      "candidate": 5.0,
+      "abs_delta": 0.0,
+      "rel_delta_pct": 0.0,
+      "higher_is_better": true,
+      "tolerance": 0.2,
+      "regressed": false
+    },
+    {
+      "metric": "latency_p50_ms",
+      "baseline": 126.88464199891314,
+      "candidate": 116.52529400089406,
+      "abs_delta": -10.359347998019075,
+      "rel_delta_pct": -8.164382887337784,
+      "higher_is_better": false,
+      "tolerance": null,
+      "regressed": false
+    },
+    {
+      "metric": "latency_p95_ms",
+      "baseline": 166.83512699819403,
+      "candidate": 130.45832220122975,
+      "abs_delta": -36.37680479696428,
+      "rel_delta_pct": -21.804044179112264,
+      "higher_is_better": false,
+      "tolerance": 1668.3512699819403,
+      "regressed": false
+    },
+    {
+      "metric": "degraded_rate",
+      "baseline": 0.0,
+      "candidate": 0.0,
+      "abs_delta": 0.0,
+      "rel_delta_pct": null,
+      "higher_is_better": false,
+      "tolerance": null,
+      "regressed": false
+    },
+    {
+      "metric": "error_rate",
+      "baseline": 0.0,
+      "candidate": 0.0,
+      "abs_delta": 0.0,
+      "rel_delta_pct": null,
+      "higher_is_better": false,
+      "tolerance": null,
+      "regressed": false
+    },
+    {
+      "metric": "acl_block_rate",
+      "baseline": 1.0,
+      "candidate": 0.5,
+      "abs_delta": -0.5,
+      "rel_delta_pct": -50.0,
+      "higher_is_better": true,
+      "tolerance": null,
+      "regressed": false
+    }
+  ],
+  "gate_passed": false,
+  "violations": [
+    {
+      "code": "acl_redline_breached",
+      "metric": "acl_block_rate",
+      "message": "ACL 红线未通过：存在泄露、未验证样本或无红线样本，阻断发布"
+    },
+    {
+      "code": "metric_regression",
+      "metric": null,
+      "message": "新增失败 2 条，超过上限 0"
+    }
+  ],
+  "blocking_reasons": [
+    "ACL 红线未通过：存在泄露、未验证样本或无红线样本，阻断发布",
+    "新增失败 2 条，超过上限 0"
+  ],
+  "newly_failed_sample_ids": [
+    "cross_region",
+    "cross_warehouse"
+  ],
+  "fixed_sample_ids": [],
+  "top_bad_cases": [
+    {
+      "sample_id": "cross_region",
+      "scenario": "supply_chain",
+      "question": "华南各仓库存",
+      "failure_category": "acl_leak",
+      "baseline_category": "none",
+      "newly_failed": true,
+      "severity": 115,
+      "detail": "hit=None; recall=None; mrr=None; faithfulness=None; accuracy=None; satisfaction=None; leaked_doc_ids=[]; ; "
+    },
+    {
+      "sample_id": "cross_warehouse",
+      "scenario": "supply_chain",
+      "question": "WH_S01 糖浆库存",
+      "failure_category": "acl_leak",
+      "baseline_category": "none",
+      "newly_failed": true,
+      "severity": 115,
+      "detail": "hit=None; recall=None; mrr=None; faithfulness=None; accuracy=None; satisfaction=None; leaked_doc_ids=[]; ; "
+    }
+  ]
+}
